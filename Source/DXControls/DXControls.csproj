@@ -11,4 +11,8 @@
     <ProjectReference Include="..\WicNet\WicNet.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Graphics\" />
+  </ItemGroup>
+
 </Project>

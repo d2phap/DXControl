@@ -33,7 +33,7 @@
             // 
             // dx
             // 
-            this.dx.BackColor = System.Drawing.Color.Transparent;
+            this.dx.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
             this.dx.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dx.Location = new System.Drawing.Point(10, 10);
             this.dx.Name = "dx";
@@ -45,7 +45,6 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.dx);
             this.Name = "Form1";

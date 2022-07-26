@@ -96,11 +96,11 @@ public class DXControl : Control
     }
 
 
-    protected override void OnPaintBackground(PaintEventArgs pevent)
+    protected override void OnPaintBackground(PaintEventArgs e)
     {
         if (DesignMode)
         {
-            base.OnPaintBackground(pevent);
+            base.OnPaintBackground(e);
         }
     }
 
@@ -123,15 +123,18 @@ public class DXControl : Control
         CreateGraphicsResources();
         if (DeviceContext == null) return;
 
+        var g = new DXGraphics(DeviceContext);
+        if (g == null) return;
+
 
         // start drawing session
-        DeviceContext.BeginDraw();
-        ClearBackground(BackColor);
+        var bgColor = BackColor.Equals(Color.Transparent) ? Parent.BackColor : BackColor;
+        g.BeginDraw(bgColor);
 
-        OnRender(DeviceContext);
+        OnRender(g);
 
         // end drawing session
-        DeviceContext.EndDraw();
+        g.EndDraw();
     }
 
 
@@ -143,24 +146,11 @@ public class DXControl : Control
     /// <summary>
     /// Paints the control using <see cref="DXGraphics"/>.
     /// </summary>
-    protected virtual void OnRender(ID2D1DeviceContext dc)
+    protected virtual void OnRender(DXGraphics g)
     {
-        var brushProps = new D2D1_BRUSH_PROPERTIES()
-        {
-            opacity = 1f,
-        };
+        g.DrawLine(new(0, 0), new(ClientSize.Width, ClientSize.Height), Color.Blue, 3.0f);
 
-        dc.CreateSolidColorBrush(new(1, 1, 0, 1), brushProps.StructureToPtr(), out var brush);
-
-        dc.DrawLine(
-            new(0, 0),
-            new D2D_POINT_2F(ClientSize.Width, ClientSize.Height),
-            brush, 3.0f);
-
-        dc.DrawLine(
-            new D2D_POINT_2F(ClientSize.Width, 0),
-            new(0, ClientSize.Height),
-            brush, 3.0f);
+        g.DrawLine(new(ClientSize.Width, 0), new(0, ClientSize.Height), Color.Red, 3.0f);
     }
 
     #endregion
@@ -217,17 +207,7 @@ public class DXControl : Control
 
     #region Public functions
 
-    /// <summary>
-    /// Clear the background by the given color.
-    /// </summary>
-    public void ClearBackground(Color color)
-    {
-        var value = DXHelper.ConvertColor(color);
-        var ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(_D3DCOLORVALUE)));
-        Marshal.StructureToPtr(value, ptr, false);
-        DeviceContext?.Clear(ptr);
-        Marshal.FreeHGlobal(ptr);
-    }
+
 
     #endregion
 

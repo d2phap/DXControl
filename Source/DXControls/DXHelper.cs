@@ -7,7 +7,6 @@ public class DXHelper
     /// <summary>
     /// Convert <see cref="System.Drawing.Color"/> to <see cref="_D3DCOLORVALUE"/>.
     /// </summary>
-    /// <returns></returns>
     public static _D3DCOLORVALUE ConvertColor(Color color)
     {
         _D3DCOLORVALUE value = new()
@@ -20,4 +19,14 @@ public class DXHelper
 
         return value;
     }
+
+
+    /// <summary>
+    /// Convert <see cref="System.Drawing.PointF"/> to <see cref="D2D_POINT_2F"/>.
+    /// </summary>
+    public static D2D_POINT_2F ConvertPointF(PointF point)
+    {
+        return new D2D_POINT_2F(point.X, point.Y);
+    }
+
 }
