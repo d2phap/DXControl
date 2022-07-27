@@ -1,13 +1,14 @@
 ﻿using DirectN;
 using System.Runtime.InteropServices;
 
-namespace DXControl;
+namespace DXControls;
 
 public class DXControl : Control
 {
-    private readonly IComObject<ID2D1Factory> Direct2dFactory;
-    private ID2D1HwndRenderTarget? RenderTarget;
-    private ID2D1DeviceContext? DeviceContext;
+    protected readonly IComObject<ID2D1Factory> Direct2dFactory;
+    protected ID2D1HwndRenderTarget? RenderTarget;
+    protected ID2D1DeviceContext? DeviceContext;
+
 
     public DXControl()
     {
@@ -27,6 +28,7 @@ public class DXControl : Control
         DoubleBuffered = false;
 
         CreateGraphicsResources();
+
     }
 
     protected override void WndProc(ref Message m)
@@ -148,9 +150,7 @@ public class DXControl : Control
     /// </summary>
     protected virtual void OnRender(DXGraphics g)
     {
-        g.DrawLine(new(0, 0), new(ClientSize.Width, ClientSize.Height), Color.Blue, 3.0f);
-
-        g.DrawLine(new(ClientSize.Width, 0), new(0, ClientSize.Height), Color.Red, 3.0f);
+        
     }
 
     #endregion

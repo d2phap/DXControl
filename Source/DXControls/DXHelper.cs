@@ -1,6 +1,11 @@
 ﻿using DirectN;
+using Microsoft.Win32.SafeHandles;
+using System.Drawing;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using WicNet;
 
-namespace DXControl;
+namespace DXControls;
 
 public class DXHelper
 {
@@ -28,5 +33,6 @@ public class DXHelper
     {
         return new D2D_POINT_2F(point.X, point.Y);
     }
+
 
 }

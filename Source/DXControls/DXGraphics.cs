@@ -2,8 +2,9 @@
 
 using DirectN;
 using System.Runtime.InteropServices;
+using WicNet;
 
-namespace DXControl;
+namespace DXControls;
 
 
 
@@ -28,6 +29,8 @@ public class DXGraphics
         }
 
         DeviceContext = dc;
+        DeviceContext.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        DeviceContext.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
     }
 
 
@@ -79,6 +82,56 @@ public class DXGraphics
 
         DeviceContext.Clear(ptr);
         Marshal.FreeHGlobal(ptr);
+    }
+
+    
+    /// <summary>
+    /// Draw bitmap
+    /// </summary>
+    public void DrawBitmap(ID2D1Bitmap? bmp,
+        D2D_RECT_F? destRect = null,
+        D2D_RECT_F? srcRect = null,
+        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_LINEAR,
+        float opacity = 1)
+    {
+        if (bmp == null) return;
+
+        DeviceContext.DrawBitmap(bmp, opacity, interpolation, destRect, srcRect);
+    }
+
+    
+    /// <summary>
+    /// Draw bitmap
+    /// </summary>
+    public void DrawBitmap(IWICBitmapSource? bmp,
+        D2D_RECT_F? destRect = null,
+        D2D_RECT_F? srcRect = null,
+        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_LINEAR,
+        float opacity = 1)
+    {
+        if (bmp == null) return;
+
+        // create D2DBitmap from WICBitmapSource
+        var bitmapProps = new D2D1_BITMAP_PROPERTIES()
+        {
+            pixelFormat = new D2D1_PIXEL_FORMAT()
+            {
+                alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
+                format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+            },
+            dpiX = 96.0f,
+            dpiY = 96.0f,
+        };
+        var bitmapPropsPtr = bitmapProps.StructureToPtr();
+
+        DeviceContext.CreateBitmapFromWicBitmap(bmp, bitmapPropsPtr,
+            out ID2D1Bitmap? bitmap)
+            .ThrowOnError();
+
+        // draw bitmap
+        DrawBitmap(bitmap, destRect, srcRect, interpolation, opacity);
+
+        Marshal.FreeHGlobal(bitmapPropsPtr);
     }
 
 
