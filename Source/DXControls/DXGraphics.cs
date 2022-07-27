@@ -2,7 +2,6 @@
 
 using DirectN;
 using System.Runtime.InteropServices;
-using WicNet;
 
 namespace DXControls;
 
@@ -101,7 +100,7 @@ public class DXGraphics
         DeviceContext.DrawBitmap(bmp, opacity, interpolation, destRect, srcRect);
     }
 
-    
+
     /// <summary>
     /// Draw bitmap
     /// </summary>
@@ -140,7 +139,7 @@ public class DXGraphics
 
 
     #region Draw Line
-    
+
     /// <summary>
     /// Draw a line.
     /// </summary>
@@ -160,7 +159,7 @@ public class DXGraphics
     {
         var point1 = new D2D_POINT_2F(x1, y1);
         var point2 = new D2D_POINT_2F(x2, y2);
-        
+
         DrawLine(point1, point2, brush, strokeWidth, strokeStyle);
     }
 
@@ -362,7 +361,7 @@ public class DXGraphics
     {
         FillRoundedRectangle(rect, radius, radius, c);
     }
-    
+
 
     /// <summary>
     /// Fill a rounded rectangle.
@@ -409,8 +408,124 @@ public class DXGraphics
 
         DeviceContext.FillRoundedRectangle(roundRect, brush);
     }
-    
-    
+
+
+    #endregion
+
+
+    #region Draw/Fill ellipse
+
+    /// <summary>
+    /// Draw an ellipse.
+    /// </summary>
+    public void DrawEllipse(D2D_RECT_F rect, Color c, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        DrawEllipse(rect.left, rect.top, rect.Width, rect.Height, c, strokeWidth, strokeStyle);
+    }
+
+
+    /// <summary>
+    /// Draw an ellipse.
+    /// </summary>
+    public void DrawEllipse(D2D_RECT_F rect, ID2D1Brush brush, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        DrawEllipse(rect.left, rect.top, rect.Width / 2, rect.Height / 2, brush, strokeWidth, strokeStyle);
+    }
+
+
+    /// <summary>
+    /// Draw an ellipse.
+    /// </summary>
+    public void DrawEllipse(float x, float y, float width, float height,
+        Color c, float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+        // draw ellipse
+        DrawEllipse(x, y, width / 2, height / 2, brush, strokeWidth, strokeStyle);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Draw an ellipse.
+    /// </summary>
+    public void DrawEllipse(float x, float y, float radiusX, float radiusY,
+        ID2D1Brush brush, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        var ellipse = new D2D1_ELLIPSE(x, y, radiusX, radiusY);
+
+        // stroke style
+        ID2D1StrokeStyle? stroke = null;
+        if (strokeStyle != null)
+        {
+            stroke = DeviceContext.GetFactory().CreateStrokeStyle(strokeStyle.Value).Object;
+        }
+
+        DeviceContext.DrawEllipse(ellipse, brush, strokeWidth, stroke);
+    }
+
+
+    /// <summary>
+    /// Fill an ellipse.
+    /// </summary>
+    public void FillEllipse(D2D_RECT_F rect, Color c)
+    {
+        FillEllipse(rect.left, rect.top, rect.Width / 2, rect.Height / 2, c);
+    }
+
+
+    /// <summary>
+    /// Fill an ellipse.
+    /// </summary>
+    public void FillEllipse(D2D_RECT_F rect, ID2D1Brush brush)
+    {
+        FillEllipse(rect.left, rect.top, rect.Width / 2, rect.Height / 2, brush);
+    }
+
+
+    /// <summary>
+    /// Fill an ellipse.
+    /// </summary>
+    public void FillEllipse(float x, float y, float width, float height, Color c)
+    {
+        var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+        // fill ellipse
+        FillEllipse(x, y, width / 2, height / 2, brush);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Fill an ellipse.
+    /// </summary>
+    public void FillEllipse(float x, float y, float radiusX, float radiusY, ID2D1Brush brush)
+    {
+        var ellipse = new D2D1_ELLIPSE(x, y, radiusX, radiusY);
+
+        DeviceContext.FillEllipse(ellipse, brush);
+    }
+
     #endregion
 
 }
