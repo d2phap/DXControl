@@ -84,14 +84,16 @@ public class DXGraphics
         Marshal.FreeHGlobal(ptr);
     }
 
-    
+
+    #region Draw Bitmap
+
     /// <summary>
     /// Draw bitmap
     /// </summary>
     public void DrawBitmap(ID2D1Bitmap? bmp,
         D2D_RECT_F? destRect = null,
         D2D_RECT_F? srcRect = null,
-        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_LINEAR,
+        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
         float opacity = 1)
     {
         if (bmp == null) return;
@@ -106,7 +108,7 @@ public class DXGraphics
     public void DrawBitmap(IWICBitmapSource? bmp,
         D2D_RECT_F? destRect = null,
         D2D_RECT_F? srcRect = null,
-        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_LINEAR,
+        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
         float opacity = 1)
     {
         if (bmp == null) return;
@@ -134,31 +136,95 @@ public class DXGraphics
         Marshal.FreeHGlobal(bitmapPropsPtr);
     }
 
+    #endregion
 
+
+    #region Draw Line
+    
     /// <summary>
     /// Draw a line.
     /// </summary>
     public void DrawLine(float x1, float y1, float x2, float y2,
         Color c, float strokeWidth = 1,
-        D2D1_BRUSH_PROPERTIES? brushStyle = null,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        DrawLine(x1, x2, y1, y2, c, strokeWidth, strokeStyle);
+    }
+
+    /// <summary>
+    /// Draw a line.
+    /// </summary>
+    public void DrawLine(float x1, float y1, float x2, float y2,
+        ID2D1Brush brush, float strokeWidth = 1,
         D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
         var point1 = new D2D_POINT_2F(x1, y1);
         var point2 = new D2D_POINT_2F(x2, y2);
-
-        DrawLine(point1, point2, c, strokeWidth, brushStyle, strokeStyle);
+        
+        DrawLine(point1, point2, brush, strokeWidth, strokeStyle);
     }
 
 
     /// <summary>
     /// Draw a line.
     /// </summary>
-    public void DrawLine(D2D_POINT_2F point1, D2D_POINT_2F point2,
-        Color c, float strokeWidth = 1,
-        D2D1_BRUSH_PROPERTIES? brushStyle = null,
+    public void DrawLine(D2D_POINT_2F point1, D2D_POINT_2F point2, Color c,
+        float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+
+        // start drawing the line
+        DrawLine(point1, point2, brush, strokeWidth, strokeStyle);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Draw a line.
+    /// </summary>
+    public void DrawLine(D2D_POINT_2F point1, D2D_POINT_2F point2, ID2D1Brush brush,
+        float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        // stroke style
+        ID2D1StrokeStyle? stroke = null;
+        if (strokeStyle != null)
+        {
+            stroke = DeviceContext.GetFactory().CreateStrokeStyle(strokeStyle.Value).Object;
+        }
+
+        // start drawing the line
+        DeviceContext.DrawLine(point1, point2, brush, strokeWidth, stroke);
+    }
+
+    #endregion
+
+
+    #region Draw/Fill Rectangle
+
+    /// <summary>
+    /// Draw a rectangle.
+    /// </summary>
+    public void DrawRectangle(D2D_RECT_F rect, Color c, float strokeWidth = 1,
         D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
         var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
 
         // stroke style
         ID2D1StrokeStyle? stroke = null;
@@ -167,21 +233,184 @@ public class DXGraphics
             stroke = DeviceContext.GetFactory().CreateStrokeStyle(strokeStyle.Value).Object;
         }
 
-
-        // set default brush stype
-        brushStyle ??= new D2D1_BRUSH_PROPERTIES()
-        {
-            opacity = 1f,
-        };
-        var brushStylePtr = brushStyle.StructureToPtr();
-        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
-
-        // start drawing the line
-        DeviceContext.DrawLine(point1, point2, brush, strokeWidth, stroke);
-
+        DeviceContext.DrawRectangle(rect, brush, strokeWidth, stroke);
 
         Marshal.FreeHGlobal(brushStylePtr);
     }
 
+
+    /// <summary>
+    /// Draw a rectangle.
+    /// </summary>
+    public void DrawRectangle(D2D_RECT_F rect, ID2D1Brush brush, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        // stroke style
+        ID2D1StrokeStyle? stroke = null;
+        if (strokeStyle != null)
+        {
+            stroke = DeviceContext.GetFactory().CreateStrokeStyle(strokeStyle.Value).Object;
+        }
+
+        DeviceContext.DrawRectangle(rect, brush, strokeWidth, stroke);
+    }
+
+
+    /// <summary>
+    /// Fill a rectangle.
+    /// </summary>
+    public void FillRectangle(D2D_RECT_F rect, Color c)
+    {
+        var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+        // fill retangle
+        FillRectangle(rect, brush);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Fill a rectangle.
+    /// </summary>
+    public void FillRectangle(D2D_RECT_F rect, ID2D1Brush brush)
+    {
+        // fill retangle
+        DeviceContext.FillRectangle(rect, brush);
+    }
+
+
+    /// <summary>
+    /// Draw a rounded rectangle.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radius, Color c,
+        float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        DrawRoundedRectangle(rect, radius, radius, c, strokeWidth, strokeStyle);
+    }
+
+
+    /// <summary>
+    /// Draw a rounded rectangle.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY, Color c,
+        float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+        // draw rectangle
+        DrawRoundedRectangle(rect, radiusX, radiusY, brush, strokeWidth, strokeStyle);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Draw a rounded rectangle.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radius, ID2D1Brush brush,
+        float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        DrawRoundedRectangle(rect, radius, radius, brush, strokeWidth, strokeStyle);
+    }
+
+
+    /// <summary>
+    /// Draw a rounded rectangle.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY,
+        ID2D1Brush brush, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        // create rounded rectangle
+        var roundRect = new D2D1_ROUNDED_RECT()
+        {
+            rect = rect,
+            radiusX = radiusX,
+            radiusY = radiusY,
+        };
+
+        // stroke style
+        ID2D1StrokeStyle? stroke = null;
+        if (strokeStyle != null)
+        {
+            stroke = DeviceContext.GetFactory().CreateStrokeStyle(strokeStyle.Value).Object;
+        }
+
+        DeviceContext.DrawRoundedRectangle(roundRect, brush, strokeWidth, stroke);
+    }
+
+
+    /// <summary>
+    /// Fill a rounded rectangle.
+    /// </summary>
+    public void FillRoundedRectangle(D2D_RECT_F rect, float radius, Color c)
+    {
+        FillRoundedRectangle(rect, radius, radius, c);
+    }
     
+
+    /// <summary>
+    /// Fill a rounded rectangle.
+    /// </summary>
+    public void FillRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY, Color c)
+    {
+        var color = DXHelper.ConvertColor(c);
+
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+        // fill rectangle
+        FillRoundedRectangle(rect, radiusX, radiusY, brush);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Fill a rounded rectangle.
+    /// </summary>
+    public void FillRoundedRectangle(D2D_RECT_F rect, float radius, ID2D1Brush brush)
+    {
+        FillRoundedRectangle(rect, radius, brush);
+    }
+
+
+    /// <summary>
+    /// Fill a rounded rectangle.
+    /// </summary>
+    public void FillRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY, ID2D1Brush brush)
+    {
+        // create rounded rectangle
+        var roundRect = new D2D1_ROUNDED_RECT()
+        {
+            rect = rect,
+            radiusX = radiusX,
+            radiusY = radiusY,
+        };
+
+        DeviceContext.FillRoundedRectangle(roundRect, brush);
+    }
+    
+    
+    #endregion
+
 }
