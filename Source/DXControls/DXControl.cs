@@ -5,16 +5,37 @@ namespace DXControls;
 
 public class DXControl : Control
 {
-    protected readonly IComObject<ID2D1Factory> Direct2dFactory;
+    private float _dpi = 96.0f;
+
+    protected IComObject<ID2D1Factory> Direct2DFactory;
+    protected IComObject<IDWriteFactory> DWriteFactory;
     protected ID2D1HwndRenderTarget? RenderTarget;
     protected ID2D1DeviceContext? DeviceContext;
+    protected DXGraphics? DGraphics;
+
+
+    public float BaseDpi
+    {
+        get => _dpi;
+        set
+        {
+            if (DeviceContext == null) return;
+
+            _dpi = value;
+            DeviceContext.SetDpi(_dpi, _dpi);
+        }
+    }
+
+    public float TextDpi { get; set; } = 96.0f;
 
 
     public DXControl()
     {
         SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
-        Direct2dFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+        Direct2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+        
+        DWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
     }
 
 
@@ -28,7 +49,6 @@ public class DXControl : Control
         DoubleBuffered = false;
 
         CreateGraphicsResources();
-
     }
 
     protected override void WndProc(ref Message m)
@@ -70,18 +90,27 @@ public class DXControl : Control
         }
     }
 
-
-    protected override void DestroyHandle()
-    {
-        base.DestroyHandle();
-
-        DisposeResources();
-    }
-
-
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
+
+        Direct2DFactory.Dispose();
+        DWriteFactory.Dispose();
+
+        DGraphics?.Dispose();
+        DGraphics = null;
+
+        if (DeviceContext != null)
+        {
+            Marshal.ReleaseComObject(DeviceContext);
+            DeviceContext = null;
+        }
+
+        if (RenderTarget != null)
+        {
+            Marshal.ReleaseComObject(RenderTarget);
+            RenderTarget = null;
+        }
     }
 
 
@@ -95,6 +124,12 @@ public class DXControl : Control
 
         // update the control once size/windows state changed
         ResizeRedraw = true;
+    }
+
+
+    protected override void OnSizeChanged(EventArgs e)
+    {
+        base.OnSizeChanged(e);
     }
 
 
@@ -123,20 +158,17 @@ public class DXControl : Control
 
         // make sure the 
         CreateGraphicsResources();
-        if (DeviceContext == null) return;
-
-        var g = new DXGraphics(DeviceContext);
-        if (g == null) return;
+        if (DeviceContext == null || DGraphics == null) return;
 
 
         // start drawing session
         var bgColor = BackColor.Equals(Color.Transparent) ? Parent.BackColor : BackColor;
-        g.BeginDraw(bgColor);
+        DGraphics.BeginDraw(new(bgColor.ToArgb()));
 
-        OnRender(g);
+        OnRender(DGraphics);
 
         // end drawing session
-        g.EndDraw();
+        DGraphics.EndDraw();
     }
 
 
@@ -152,7 +184,7 @@ public class DXControl : Control
     {
         
     }
-
+    
     #endregion
 
 
@@ -172,34 +204,16 @@ public class DXControl : Control
                 pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height),
             };
 
-            Direct2dFactory.Object.CreateHwndRenderTarget(new D2D1_RENDER_TARGET_PROPERTIES(), hwndRenderTargetProps, out RenderTarget).ThrowOnError();
+            Direct2DFactory.Object.CreateHwndRenderTarget(new D2D1_RENDER_TARGET_PROPERTIES(), hwndRenderTargetProps, out RenderTarget).ThrowOnError();
 
+            RenderTarget.SetDpi(BaseDpi, BaseDpi);
             RenderTarget.Resize(new(ClientSize.Width, ClientSize.Height));
-            RenderTarget.SetDpi(96.0f, 96.0f);
+            
 
             DeviceContext = (ID2D1DeviceContext)RenderTarget;
+
+            DGraphics = new(DeviceContext, DWriteFactory);
         }
-    }
-
-
-    /// <summary>
-    /// Dispose graphics resources.
-    /// </summary>
-    private void DisposeResources()
-    {
-        if (DeviceContext != null)
-        {
-            Marshal.ReleaseComObject(DeviceContext);
-            DeviceContext = null;
-        }
-
-        if (RenderTarget != null)
-        {
-            Marshal.ReleaseComObject(RenderTarget);
-            RenderTarget = null;
-        }
-
-        Direct2dFactory.Dispose();
     }
 
     #endregion

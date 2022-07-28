@@ -1,9 +1,4 @@
 ﻿using DirectN;
-using Microsoft.Win32.SafeHandles;
-using System.Drawing;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using WicNet;
 
 namespace DXControls;
 
