@@ -1,6 +1,7 @@
 ﻿
 
 using DirectN;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace DXControls;
@@ -10,26 +11,70 @@ namespace DXControls;
 /// <summary>
 /// Direct2D graphics
 /// </summary>
-public class DXGraphics
+public class DXGraphics : IDisposable
 {
+
+    #region IDisposable Disposing
+
+    private bool _isDisposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+            return;
+
+        if (disposing)
+        {
+            // Free any other managed objects here.
+
+            DWriteFactory.Dispose();
+            Marshal.ReleaseComObject(DeviceContext);
+        }
+
+        // Free any unmanaged objects here.
+        _isDisposed = true;
+    }
+
+    public virtual void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~DXGraphics()
+    {
+        Dispose(false);
+    }
+
+    #endregion
+
+
+
     public ID2D1DeviceContext DeviceContext { get; init; }
+    public IComObject<IDWriteFactory> DWriteFactory { get; init; }
 
 
     /// <summary>
     /// Initialize new instance of <see cref="ID2D1DeviceContext"/>.
     /// </summary>
-    /// <param name="dc">The device context</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public DXGraphics(ID2D1DeviceContext? dc)
+    public DXGraphics(ID2D1DeviceContext? dc, IComObject<IDWriteFactory>? wf)
     {
         if (dc == null)
         {
             throw new ArgumentNullException(nameof(dc), "ID2D1DeviceContext is null.");
         }
 
+        if (wf == null)
+        {
+            throw new ArgumentNullException(nameof(wf), "IComObject<IDWriteFactory> is null.");
+        }
+
         DeviceContext = dc;
         DeviceContext.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
         DeviceContext.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
+
+        DWriteFactory = wf;
     }
 
 
@@ -45,7 +90,7 @@ public class DXGraphics
     /// <summary>
     /// Begins a new drawing session.
     /// </summary>
-    public void BeginDraw(Color c)
+    public void BeginDraw(_D3DCOLORVALUE c)
     {
         DeviceContext.BeginDraw();
         ClearBackground(c);
@@ -74,10 +119,9 @@ public class DXGraphics
     /// <summary>
     /// Clear the background by the given color.
     /// </summary>
-    public void ClearBackground(Color color)
+    public void ClearBackground(_D3DCOLORVALUE color)
     {
-        var value = DXHelper.ConvertColor(color);
-        var ptr = value.StructureToPtr();
+        var ptr = color.StructureToPtr();
 
         DeviceContext.Clear(ptr);
         Marshal.FreeHGlobal(ptr);
@@ -100,41 +144,6 @@ public class DXGraphics
         DeviceContext.DrawBitmap(bmp, opacity, interpolation, destRect, srcRect);
     }
 
-
-    /// <summary>
-    /// Draw bitmap
-    /// </summary>
-    public void DrawBitmap(IWICBitmapSource? bmp,
-        D2D_RECT_F? destRect = null,
-        D2D_RECT_F? srcRect = null,
-        D2D1_INTERPOLATION_MODE interpolation = D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
-        float opacity = 1)
-    {
-        if (bmp == null) return;
-
-        // create D2DBitmap from WICBitmapSource
-        var bitmapProps = new D2D1_BITMAP_PROPERTIES()
-        {
-            pixelFormat = new D2D1_PIXEL_FORMAT()
-            {
-                alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
-                format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-            },
-            dpiX = 96.0f,
-            dpiY = 96.0f,
-        };
-        var bitmapPropsPtr = bitmapProps.StructureToPtr();
-
-        DeviceContext.CreateBitmapFromWicBitmap(bmp, bitmapPropsPtr,
-            out ID2D1Bitmap? bitmap)
-            .ThrowOnError();
-
-        // draw bitmap
-        DrawBitmap(bitmap, destRect, srcRect, interpolation, opacity);
-
-        Marshal.FreeHGlobal(bitmapPropsPtr);
-    }
-
     #endregion
 
 
@@ -144,10 +153,10 @@ public class DXGraphics
     /// Draw a line.
     /// </summary>
     public void DrawLine(float x1, float y1, float x2, float y2,
-        Color c, float strokeWidth = 1,
+        _D3DCOLORVALUE color, float strokeWidth = 1,
         D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        DrawLine(x1, x2, y1, y2, c, strokeWidth, strokeStyle);
+        DrawLine(x1, x2, y1, y2, color, strokeWidth, strokeStyle);
     }
 
     /// <summary>
@@ -167,11 +176,9 @@ public class DXGraphics
     /// <summary>
     /// Draw a line.
     /// </summary>
-    public void DrawLine(D2D_POINT_2F point1, D2D_POINT_2F point2, Color c,
+    public void DrawLine(D2D_POINT_2F point1, D2D_POINT_2F point2, _D3DCOLORVALUE color,
         float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -212,11 +219,9 @@ public class DXGraphics
     /// <summary>
     /// Draw a rectangle.
     /// </summary>
-    public void DrawRectangle(D2D_RECT_F rect, Color c, float strokeWidth = 1,
+    public void DrawRectangle(D2D_RECT_F rect, _D3DCOLORVALUE color, float strokeWidth = 1,
         D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -258,10 +263,8 @@ public class DXGraphics
     /// <summary>
     /// Fill a rectangle.
     /// </summary>
-    public void FillRectangle(D2D_RECT_F rect, Color c)
+    public void FillRectangle(D2D_RECT_F rect, _D3DCOLORVALUE color)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -289,21 +292,20 @@ public class DXGraphics
     /// <summary>
     /// Draw a rounded rectangle.
     /// </summary>
-    public void DrawRoundedRectangle(D2D_RECT_F rect, float radius, Color c,
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radius, _D3DCOLORVALUE color,
         float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        DrawRoundedRectangle(rect, radius, radius, c, strokeWidth, strokeStyle);
+        DrawRoundedRectangle(rect, radius, radius, color, strokeWidth, strokeStyle);
     }
 
 
     /// <summary>
     /// Draw a rounded rectangle.
     /// </summary>
-    public void DrawRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY, Color c,
-        float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY,
+        _D3DCOLORVALUE color, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -357,19 +359,17 @@ public class DXGraphics
     /// <summary>
     /// Fill a rounded rectangle.
     /// </summary>
-    public void FillRoundedRectangle(D2D_RECT_F rect, float radius, Color c)
+    public void FillRoundedRectangle(D2D_RECT_F rect, float radius, _D3DCOLORVALUE color)
     {
-        FillRoundedRectangle(rect, radius, radius, c);
+        FillRoundedRectangle(rect, radius, radius, color);
     }
 
 
     /// <summary>
     /// Fill a rounded rectangle.
     /// </summary>
-    public void FillRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY, Color c)
+    public void FillRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY, _D3DCOLORVALUE color)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -418,10 +418,10 @@ public class DXGraphics
     /// <summary>
     /// Draw an ellipse.
     /// </summary>
-    public void DrawEllipse(D2D_RECT_F rect, Color c, float strokeWidth = 1,
+    public void DrawEllipse(D2D_RECT_F rect, _D3DCOLORVALUE color, float strokeWidth = 1,
         D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        DrawEllipse(rect.left, rect.top, rect.Width, rect.Height, c, strokeWidth, strokeStyle);
+        DrawEllipse(rect.left, rect.top, rect.Width, rect.Height, color, strokeWidth, strokeStyle);
     }
 
 
@@ -439,10 +439,8 @@ public class DXGraphics
     /// Draw an ellipse.
     /// </summary>
     public void DrawEllipse(float x, float y, float width, float height,
-        Color c, float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+        _D3DCOLORVALUE color, float strokeWidth = 1, D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -480,9 +478,9 @@ public class DXGraphics
     /// <summary>
     /// Fill an ellipse.
     /// </summary>
-    public void FillEllipse(D2D_RECT_F rect, Color c)
+    public void FillEllipse(D2D_RECT_F rect, _D3DCOLORVALUE color)
     {
-        FillEllipse(rect.left, rect.top, rect.Width / 2, rect.Height / 2, c);
+        FillEllipse(rect.left, rect.top, rect.Width / 2, rect.Height / 2, color);
     }
 
 
@@ -498,10 +496,8 @@ public class DXGraphics
     /// <summary>
     /// Fill an ellipse.
     /// </summary>
-    public void FillEllipse(float x, float y, float width, float height, Color c)
+    public void FillEllipse(float x, float y, float width, float height, _D3DCOLORVALUE color)
     {
-        var color = DXHelper.ConvertColor(c);
-
         // create solid brush
         var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
         {
@@ -527,5 +523,100 @@ public class DXGraphics
     }
 
     #endregion
+
+
+    #region Draw text
+
+    /// <summary>
+    /// Measure text.
+    /// </summary>
+    public D2D_SIZE_F MeasureText(string text, string fontFamilyName, float fontSize,
+        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR,
+        float textDpi = 96.0f)
+    {
+        // fix DPI
+        fontSize *= textDpi / 96.0f;
+
+        using var format = DWriteFactory.CreateTextFormat(fontFamilyName, fontSize,
+            weight: fontWeight);
+
+
+        using var layout = DWriteFactory.CreateTextLayout(format, text);
+        layout.Object.GetMetrics(out var metrics);
+
+        return new D2D_SIZE_F(metrics.width, metrics.height);
+    }
+
+
+    /// <summary>
+    /// Draw text.
+    /// </summary>
+    public void DrawText(string text, string fontFamilyName, float fontSize,
+        D2D_RECT_F rect, _D3DCOLORVALUE color, float? textDpi = null,
+        DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_LEADING,
+        DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
+        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR,
+        D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT)
+    {
+        // create solid brush
+        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
+        {
+            opacity = 1f,
+        }.StructureToPtr();
+        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+
+
+        // draw text
+        DrawText(text, fontFamilyName, fontSize, rect, brush, textDpi, hAlign, vAlign, fontWeight, options);
+
+        Marshal.FreeHGlobal(brushStylePtr);
+    }
+
+
+    /// <summary>
+    /// Draw text.
+    /// </summary>
+    public void DrawText(string text, string fontFamilyName, float fontSize,
+        D2D_RECT_F rect, ID2D1Brush brush, float? textDpi = null,
+        DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_LEADING,
+        DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
+        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR,
+        D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT)
+    {
+        // backup base dpi
+        DeviceContext.GetDpi(out var baseDpiX, out var baseDpiY);
+
+        // fix DPI
+        if (textDpi != null)
+        {
+            var dpiFactor = textDpi.Value / 96.0f;
+            DeviceContext.SetDpi(textDpi.Value, textDpi.Value);
+
+            fontSize *= dpiFactor;
+
+            rect.left /= dpiFactor;
+            rect.top /= dpiFactor;
+            rect.right /= dpiFactor;
+            rect.bottom /= dpiFactor;
+        }
+
+        // format text
+        using var format = DWriteFactory.CreateTextFormat(fontFamilyName, fontSize,
+            weight: fontWeight);
+        format.Object.SetTextAlignment(hAlign);
+        format.Object.SetParagraphAlignment(vAlign);
+
+        
+        DeviceContext.DrawText(text, format.Object, rect, brush, options);
+
+        // restore base dpi
+        if (textDpi != null)
+        {
+            DeviceContext.SetDpi(baseDpiX, baseDpiY);
+        }
+    }
+
+    #endregion
+
 
 }
