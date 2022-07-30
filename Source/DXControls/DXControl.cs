@@ -1,4 +1,5 @@
 ﻿using DirectN;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace DXControls;
@@ -6,14 +7,39 @@ namespace DXControls;
 public class DXControl : Control
 {
     private float _dpi = 96.0f;
+    private readonly VerticalBlankTicker _ticker = new();
+    private bool _enableAnimation = true;
+
+    private int _currentFps = 0;
+    private int _lastFps = 0;
+    private DateTime _lastFpsUpdate = DateTime.UtcNow;
+
 
     protected IComObject<ID2D1Factory> Direct2DFactory;
     protected IComObject<IDWriteFactory> DWriteFactory;
     protected ID2D1HwndRenderTarget? RenderTarget;
     protected ID2D1DeviceContext? DeviceContext;
-    protected DXGraphics? DGraphics;
+    protected DXGraphics? D2Graphics;
+
+    /// <summary>
+    /// Request to update frame by <see cref="OnFrame"/> event.
+    /// </summary>
+    protected bool RequestUpdateFrame { get; set; } = true;
+
+    /// <summary>
+    /// Enable FPS measurement.
+    /// </summary>
+    protected bool CheckFPS { get; set; } = false;
 
 
+    public event EventHandler<RenderEventArgs>? RenderDX;
+    public event EventHandler<PaintEventArgs>? RenderGDIPlus;
+    public event EventHandler<FrameEventArgs>? Frame;
+
+
+    /// <summary>
+    /// Gets, sets the DPI for drawing when using <see cref="DXGraphics"/>.
+    /// </summary>
     public float BaseDpi
     {
         get => _dpi;
@@ -26,7 +52,46 @@ public class DXControl : Control
         }
     }
 
+
+    /// <summary>
+    /// Gets, sets the DPI for text drawing when using <see cref="DXGraphics"/>.
+    /// </summary>
     public float TextDpi { get; set; } = 96.0f;
+
+
+    /// <summary>
+    /// Gets FPS info when the <see cref="CheckFPS"/> is set to <c>true</c>.
+    /// </summary>
+    public int FPS => _lastFps;
+
+
+    /// <summary>
+    /// Enables animation support for the control.
+    /// </summary>
+    [Category("Animation")]
+    [DefaultValue(true)]
+    public bool EnableAnimation
+    {
+        get => _enableAnimation;
+        set
+        {
+            _enableAnimation = value;
+
+            if (!_enableAnimation)
+            {
+                if (_ticker.IsRunning) _ticker.Stop(1000);
+            }
+            else
+            {
+                if (!_ticker.IsRunning)
+                {
+                    _ticker.ResetTicks();
+                    _ticker.Start();
+                }
+            }
+        }
+    }
+
 
 
     public DXControl()
@@ -47,10 +112,14 @@ public class DXControl : Control
         if (DesignMode) return;
 
         DoubleBuffered = false;
-
         CreateGraphicsResources();
+
+        
+        _ticker.Tick += Ticker_Tick;
+        _ticker.Start();
     }
 
+    
     protected override void WndProc(ref Message m)
     {
         const int WM_ERASEBKGND = 0x0014;
@@ -90,15 +159,17 @@ public class DXControl : Control
         }
     }
 
+    
     protected override void Dispose(bool disposing)
     {
-        base.Dispose(disposing);
+        _ticker.Stop(1000);
+        _ticker.Tick -= Ticker_Tick;
 
         Direct2DFactory.Dispose();
         DWriteFactory.Dispose();
 
-        DGraphics?.Dispose();
-        DGraphics = null;
+        D2Graphics?.Dispose();
+        D2Graphics = null;
 
         if (DeviceContext != null)
         {
@@ -111,6 +182,10 @@ public class DXControl : Control
             Marshal.ReleaseComObject(RenderTarget);
             RenderTarget = null;
         }
+
+        GC.Collect();
+
+        base.Dispose(disposing);
     }
 
 
@@ -133,6 +208,10 @@ public class DXControl : Control
     }
 
 
+    /// <summary>
+    /// Control background is painted in <see cref="OnPaint(PaintEventArgs)"/>.
+    /// </summary>
+    /// <param name="e"></param>
     protected override void OnPaintBackground(PaintEventArgs e)
     {
         if (DesignMode)
@@ -142,7 +221,9 @@ public class DXControl : Control
     }
 
 
-    [Obsolete("Use 'OnRender' to paint the control.", true)]
+    /// <summary>
+    /// Use <see cref="OnRender(DXGraphics)"/> or <see cref="OnRender(Graphics)"/> to paint.
+    /// </summary>
     protected override void OnPaint(PaintEventArgs e)
     {
         if (DesignMode)
@@ -158,17 +239,38 @@ public class DXControl : Control
 
         // make sure the 
         CreateGraphicsResources();
-        if (DeviceContext == null || DGraphics == null) return;
+        if (DeviceContext == null || D2Graphics == null) return;
 
 
+        // Use Direct2D graphics to draw
         // start drawing session
         var bgColor = BackColor.Equals(Color.Transparent) ? Parent.BackColor : BackColor;
-        DGraphics.BeginDraw(new(bgColor.ToArgb()));
-
-        OnRender(DGraphics);
+        D2Graphics.BeginDraw(new(bgColor.ToArgb()));
+        OnRender(D2Graphics);
 
         // end drawing session
-        DGraphics.EndDraw();
+        D2Graphics.EndDraw();
+
+
+        // Use GDPI+ to draw
+        e.Graphics.Clear(bgColor);
+        OnRender(e.Graphics);
+
+
+        // calculate FPS
+        if (CheckFPS)
+        {
+            if (_lastFpsUpdate.Second != DateTime.UtcNow.Second)
+            {
+                _lastFps = _currentFps;
+                _currentFps = 0;
+                _lastFpsUpdate = DateTime.UtcNow;
+            }
+            else
+            {
+                _currentFps++;
+            }
+        }
     }
 
 
@@ -178,13 +280,31 @@ public class DXControl : Control
     #region Virtual functions
 
     /// <summary>
-    /// Paints the control using <see cref="DXGraphics"/>.
+    /// Paints the control using Direct2D <see cref="DXGraphics"/>.
     /// </summary>
     protected virtual void OnRender(DXGraphics g)
     {
-        
+        RenderDX?.Invoke(this, new RenderEventArgs(g));
+    }
+
+
+    /// <summary>
+    /// Paints the control using GDI+ <see cref="Graphics"/>.
+    /// </summary>
+    protected virtual void OnRender(Graphics g)
+    {
+        RenderGDIPlus?.Invoke(this, new(g, ClientRectangle));
     }
     
+
+    /// <summary>
+    /// Process animation logic when frame changes
+    /// </summary>
+    protected virtual void OnFrame(FrameEventArgs e)
+    {
+        Frame?.Invoke(this, e);
+    }
+
     #endregion
 
 
@@ -211,8 +331,17 @@ public class DXControl : Control
             
 
             DeviceContext = (ID2D1DeviceContext)RenderTarget;
+            D2Graphics = new DXGraphics(DeviceContext, DWriteFactory);
+        }
+    }
 
-            DGraphics = new(DeviceContext, DWriteFactory);
+
+    private void Ticker_Tick(object? sender, VerticalBlankTickerEventArgs e)
+    {
+        if (EnableAnimation && RequestUpdateFrame)
+        {
+            OnFrame(new(e.Ticks));
+            Invalidate();
         }
     }
 
