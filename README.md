@@ -1,6 +1,6 @@
 # DXControl
 
-- A WinForms hybrid controls that supports Direct2D and GDI+ drawing thanks to [DirectN](https://github.com/smourier/DirectN) and [WicNet](https://github.com/smourier/WicNet).
+- A WinForms hybrid control that supports Direct2D and GDI+ drawing thanks to [DirectN](https://github.com/smourier/DirectN) and [WicNet](https://github.com/smourier/WicNet).
 - This control is used in [ImageGlass](https://github.com/d2phap/ImageGlass) software since version 9.0.
 
 ![Nuget](https://img.shields.io/nuget/dt/D2Phap.DXControl?color=%2300a8d6&logo=nuget)

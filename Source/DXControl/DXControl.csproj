@@ -8,19 +8,35 @@
     <PackageId>D2Phap.$(AssemblyName)</PackageId>
     <RootNamespace>D2Phap</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Title>WinForms hybrid controls that supports Direct2D and GDI+</Title>
+    <Title>WinForms hybrid control that supports Direct2D and GDI+</Title>
     <Product>D2Phap.$(AssemblyName)</Product>
-    <Description>WinForms hybrid controls that supports Direct2D and GDI+ thanks to DirectN and WicNet.</Description>
+    <Description>WinForms hybrid control that supports Direct2D and GDI+ thanks to DirectN and WicNet.</Description>
     <Copyright>Copyright (C) 2022 Duong Dieu Phap. All rights reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/d2phap/DXControls</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/d2phap/DXControl</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/d2phap/DXControls</RepositoryUrl>
+    <RepositoryUrl>https://github.com/d2phap/DXControl</RepositoryUrl>
     <PackageTags>Direct2D, WIC, DirectWrite, WinForms</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <IncludeSymbols>False</IncludeSymbols>
+    <IncludeSymbols>True</IncludeSymbols>
     <PackageReleaseNotes></PackageReleaseNotes>
     <Authors>Duong Dieu Phap</Authors>
+    <SignAssembly>False</SignAssembly>
+    <VersionPrefix>1.0.3</VersionPrefix>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+      <PublishRepositoryUrl>true</PublishRepositoryUrl>
+      <EmbedUntrackedSources>true</EmbedUntrackedSources>
+      <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
 
   <ItemGroup>
     <None Include="..\..\LICENSE">
@@ -34,7 +50,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WicNet\WicNet.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="WicNet" Version="1.5.0" />
   </ItemGroup>
 
 </Project>
