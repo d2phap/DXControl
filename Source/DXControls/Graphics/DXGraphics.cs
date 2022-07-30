@@ -1,15 +1,16 @@
-﻿
-
+﻿/*
+MIT License
+Copyright (C) 2022 DUONG DIEU PHAP
+Project & license info: https://github.com/d2phap/DXControls
+*/
 using DirectN;
-using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace DXControls;
-
+namespace D2Phap;
 
 
 /// <summary>
-/// Direct2D graphics
+/// Encapsulates a Direct2D drawing surface.
 /// </summary>
 public class DXGraphics : IDisposable
 {
@@ -49,9 +50,15 @@ public class DXGraphics : IDisposable
     #endregion
 
 
-
+    /// <summary>
+    /// Gets the <see cref="ID2D1DeviceContext"></see> object used to control the drawing.
+    /// </summary>
     public ID2D1DeviceContext DeviceContext { get; init; }
-    
+
+
+    /// <summary>
+    /// Gets the <see cref="IDWriteFactory"/> object wrapped into the <see cref="IComObject{T}"/> for drawing text.
+    /// </summary>
     public IComObject<IDWriteFactory> DWriteFactory { get; init; }
 
 
@@ -76,55 +83,6 @@ public class DXGraphics : IDisposable
         DeviceContext.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
 
         DWriteFactory = wf;
-    }
-
-
-    /// <summary>
-    /// Begins a new drawing session.
-    /// </summary>
-    public void BeginDraw()
-    {
-        DeviceContext.BeginDraw();
-    }
-
-
-    /// <summary>
-    /// Begins a new drawing session.
-    /// </summary>
-    public void BeginDraw(_D3DCOLORVALUE c)
-    {
-        DeviceContext.BeginDraw();
-        ClearBackground(c);
-    }
-
-
-    /// <summary>
-    /// Ends the current drawing session.
-    /// </summary>
-    public void EndDraw()
-    {
-        DeviceContext.EndDraw();
-    }
-
-
-    /// <summary>
-    /// Executes all pending drawing commands.
-    /// </summary>
-    public void Flush()
-    {
-        DeviceContext.Flush(IntPtr.Zero, IntPtr.Zero);
-    }
-
-
-    /// <summary>
-    /// Clear the background by the given color.
-    /// </summary>
-    public void ClearBackground(_D3DCOLORVALUE color)
-    {
-        var ptr = color.StructureToPtr();
-
-        DeviceContext.Clear(ptr);
-        Marshal.FreeHGlobal(ptr);
     }
 
 
@@ -606,7 +564,7 @@ public class DXGraphics : IDisposable
         format.Object.SetTextAlignment(hAlign);
         format.Object.SetParagraphAlignment(vAlign);
 
-        
+
         DeviceContext.DrawText(text, format.Object, rect, brush, options);
 
         // restore base dpi
@@ -618,5 +576,25 @@ public class DXGraphics : IDisposable
 
     #endregion
 
+
+    /// <summary>
+    /// Executes all pending drawing commands.
+    /// </summary>
+    public void Flush()
+    {
+        DeviceContext.Flush(IntPtr.Zero, IntPtr.Zero);
+    }
+
+
+    /// <summary>
+    /// Clear the background by the given color.
+    /// </summary>
+    public void ClearBackground(_D3DCOLORVALUE color)
+    {
+        var ptr = color.StructureToPtr();
+
+        DeviceContext.Clear(ptr);
+        Marshal.FreeHGlobal(ptr);
+    }
 
 }

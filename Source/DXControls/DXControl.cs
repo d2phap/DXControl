@@ -1,9 +1,17 @@
-﻿using DirectN;
+﻿/*
+MIT License
+Copyright (C) 2022 DUONG DIEU PHAP
+Project & license info: https://github.com/d2phap/DXControls
+*/
+using DirectN;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace DXControls;
+namespace D2Phap;
 
+/// <summary>
+/// Defines the base class for hybrid control with Direct2D and GDI+ graphics support.
+/// </summary>
 public class DXControl : Control
 {
     private float _dpi = 96.0f;
@@ -15,31 +23,41 @@ public class DXControl : Control
     private DateTime _lastFpsUpdate = DateTime.UtcNow;
 
 
+    // Protected properties
+    #region Protected properties
     protected IComObject<ID2D1Factory> Direct2DFactory;
     protected IComObject<IDWriteFactory> DWriteFactory;
     protected ID2D1HwndRenderTarget? RenderTarget;
     protected ID2D1DeviceContext? DeviceContext;
+
+
+    /// <summary>
+    /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="OnRender(DXGraphics)"/>.
+    /// </summary>
     protected DXGraphics? D2Graphics;
+
 
     /// <summary>
     /// Request to update frame by <see cref="OnFrame"/> event.
     /// </summary>
     protected bool RequestUpdateFrame { get; set; } = true;
 
+
     /// <summary>
     /// Enable FPS measurement.
     /// </summary>
     protected bool CheckFPS { get; set; } = false;
 
+    #endregion // Protected properties
 
-    public event EventHandler<RenderEventArgs>? RenderDX;
-    public event EventHandler<PaintEventArgs>? RenderGDIPlus;
-    public event EventHandler<FrameEventArgs>? Frame;
 
+    // Public properties
+    #region Public properties
 
     /// <summary>
     /// Gets, sets the DPI for drawing when using <see cref="DXGraphics"/>.
     /// </summary>
+    [Browsable(false)]
     public float BaseDpi
     {
         get => _dpi;
@@ -56,12 +74,14 @@ public class DXControl : Control
     /// <summary>
     /// Gets, sets the DPI for text drawing when using <see cref="DXGraphics"/>.
     /// </summary>
+    [Browsable(false)]
     public float TextDpi { get; set; } = 96.0f;
 
 
     /// <summary>
     /// Gets FPS info when the <see cref="CheckFPS"/> is set to <c>true</c>.
     /// </summary>
+    [Browsable(false)]
     public int FPS => _lastFps;
 
 
@@ -93,17 +113,41 @@ public class DXControl : Control
     }
 
 
+    /// <summary>
+    /// Occurs when the control is redrawn with <see cref="DXGraphics"/>.
+    /// </summary>
+    public event EventHandler<RenderDXEventArgs>? RenderDX;
 
+
+    /// <summary>
+    /// Occurs when the control is redrawn with <see cref="Graphics"/>.
+    /// </summary>
+    public event EventHandler<PaintEventArgs>? RenderGDIPlus;
+
+
+    /// <summary>
+    /// Occurs when the animation frame logics need to update.
+    /// </summary>
+    public event EventHandler<FrameEventArgs>? Frame;
+
+    #endregion // Public properties
+
+
+
+    /// <summary>
+    /// Initializes new instance of <see cref="DXControl"/>.
+    /// </summary>
     public DXControl()
     {
         SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
         Direct2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
-        
+
         DWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
     }
 
 
+    // Override functions
     #region Override functions
 
     protected override void CreateHandle()
@@ -114,52 +158,11 @@ public class DXControl : Control
         DoubleBuffered = false;
         CreateGraphicsResources();
 
-        
         _ticker.Tick += Ticker_Tick;
         _ticker.Start();
     }
 
-    
-    protected override void WndProc(ref Message m)
-    {
-        const int WM_ERASEBKGND = 0x0014;
-        const int WM_SIZE = 0x0005;
-        const int WM_DESTROY = 0x0002;
 
-        switch (m.Msg)
-        {
-            //case WM_ERASEBKGND:
-
-            //    // to fix background is delayed to paint on launch
-            //    if (_firstPaintBackground)
-            //    {
-            //        _firstPaintBackground = false;
-            //        if (!_useHardwardAcceleration)
-            //        {
-            //            base.WndProc(ref m);
-            //        }
-            //        else
-            //        {
-            //            _graphics?.BeginRender(D2DColor.FromGDIColor(BackColor));
-            //            _graphics?.EndRender();
-            //        }
-            //    }
-            //    break;
-
-            case WM_SIZE:
-                base.WndProc(ref m);
-
-                //RenderTarget?.Resize(new(ClientSize.Width, ClientSize.Height));
-                break;
-
-
-            default:
-                base.WndProc(ref m);
-                break;
-        }
-    }
-
-    
     protected override void Dispose(bool disposing)
     {
         _ticker.Stop(1000);
@@ -241,19 +244,20 @@ public class DXControl : Control
         CreateGraphicsResources();
         if (DeviceContext == null || D2Graphics == null) return;
 
-
-        // Use Direct2D graphics to draw
-        // start drawing session
         var bgColor = BackColor.Equals(Color.Transparent) ? Parent.BackColor : BackColor;
-        D2Graphics.BeginDraw(new(bgColor.ToArgb()));
+        DoubleBuffered = false; // must be false
+
+
+        // start Direct2D graphics drawing session
+        DeviceContext.BeginDraw();
+        D2Graphics.ClearBackground(new(bgColor.ToArgb()));
         OnRender(D2Graphics);
 
         // end drawing session
-        D2Graphics.EndDraw();
+        DeviceContext.EndDraw();
 
 
-        // Use GDPI+ to draw
-        e.Graphics.Clear(bgColor);
+        // Use GDI+ to draw
         OnRender(e.Graphics);
 
 
@@ -273,10 +277,10 @@ public class DXControl : Control
         }
     }
 
+    #endregion // Override functions
 
-    #endregion
 
-
+    // Virtual functions
     #region Virtual functions
 
     /// <summary>
@@ -284,7 +288,7 @@ public class DXControl : Control
     /// </summary>
     protected virtual void OnRender(DXGraphics g)
     {
-        RenderDX?.Invoke(this, new RenderEventArgs(g));
+        RenderDX?.Invoke(this, new RenderDXEventArgs(g));
     }
 
 
@@ -295,7 +299,7 @@ public class DXControl : Control
     {
         RenderGDIPlus?.Invoke(this, new(g, ClientRectangle));
     }
-    
+
 
     /// <summary>
     /// Process animation logic when frame changes
@@ -305,10 +309,10 @@ public class DXControl : Control
         Frame?.Invoke(this, e);
     }
 
-    #endregion
+    #endregion // Virtual functions
 
 
-
+    // Private functions
     #region Private functions
 
     /// <summary>
@@ -328,7 +332,7 @@ public class DXControl : Control
 
             RenderTarget.SetDpi(BaseDpi, BaseDpi);
             RenderTarget.Resize(new(ClientSize.Width, ClientSize.Height));
-            
+
 
             DeviceContext = (ID2D1DeviceContext)RenderTarget;
             D2Graphics = new DXGraphics(DeviceContext, DWriteFactory);
@@ -345,13 +349,6 @@ public class DXControl : Control
         }
     }
 
-    #endregion
-
-
-    #region Public functions
-
-
-
-    #endregion
+    #endregion // Private functions
 
 }

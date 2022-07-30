@@ -5,7 +5,33 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>D2Phap.$(AssemblyName)</PackageId>
+    <RootNamespace>D2Phap</RootNamespace>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>WinForms hybrid controls that supports Direct2D and GDI+</Title>
+    <Product>D2Phap.$(AssemblyName)</Product>
+    <Description>WinForms hybrid controls that supports Direct2D and GDI+ thanks to DirectN and WicNet.</Description>
+    <Copyright>Copyright (C) 2022 Duong Dieu Phap. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/d2phap/DXControls</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/d2phap/DXControls</RepositoryUrl>
+    <PackageTags>Direct2D, WIC, DirectWrite, WinForms</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <IncludeSymbols>False</IncludeSymbols>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <Authors>Duong Dieu Phap</Authors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WicNet\WicNet.csproj" />

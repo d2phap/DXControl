@@ -1,24 +1,25 @@
-﻿
-namespace DXControls;
+﻿/*
+MIT License
+Copyright (C) 2022 DUONG DIEU PHAP
+Project & license info: https://github.com/d2phap/DXControls
+*/
+namespace D2Phap;
 
-public class RenderEventArgs : EventArgs
+
+/// <summary>
+/// Provides the data for <see cref="DXControl.RenderDX"/> event.
+/// </summary>
+public class RenderDXEventArgs : EventArgs
 {
+    /// <summary>
+    /// Gets the <see cref='DXGraphics'/> object used to draw.
+    /// </summary>
     public DXGraphics Graphics { get; init; }
 
-    public RenderEventArgs(DXGraphics g)
+
+    public RenderDXEventArgs(DXGraphics g)
     {
         Graphics = g;
-    }
-}
-
-
-public class FrameEventArgs : EventArgs
-{
-    public long Ticks { get; init; }
-
-    public FrameEventArgs(long ticks)
-    {
-        Ticks = ticks;
     }
 }
 
