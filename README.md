@@ -11,6 +11,7 @@
 - Nuget package: [https://www.nuget.org/packages/D2Phap.DXControl](https://www.nuget.org/packages/D2Phap.DXControl)
 - About: [https://imageglass.org/about](https://imageglass.org/about)
 
+
 ## Features
 - High performance drawing using Direct2D.
 - Names and types are exactly the same as the native concepts of Direct2D (interfaces, enums, structures, constants, methods, arguments, guids, etc...). So you can read the official documentation, use existing C/C++ samples, and start coding with .NET right away.
@@ -30,6 +31,9 @@ Install-Package D2Phap.DXControl
 
 ## Example
 Draw 2 rectangles by Direct2D and GDI+ graphics, then animate it to the right side.
+
+<img src="https://user-images.githubusercontent.com/3154213/181906424-27418cfd-5f41-4380-8ae9-0ea577c91b16.png" width="500" />
+
 
 ```cs
 using D2phap;
