@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WicNet", "WicNet\WicNet.csproj", "{7491C944-EF3C-476B-AD91-1F4D5465D4AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DXControls", "DXControls\DXControls.csproj", "{7DB72718-F0A3-41FC-8C8C-0E6E0EE0F6DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DXControl", "DXControl\DXControl.csproj", "{7DB72718-F0A3-41FC-8C8C-0E6E0EE0F6DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
