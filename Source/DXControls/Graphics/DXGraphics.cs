@@ -51,6 +51,7 @@ public class DXGraphics : IDisposable
 
 
     public ID2D1DeviceContext DeviceContext { get; init; }
+    
     public IComObject<IDWriteFactory> DWriteFactory { get; init; }
 
 
@@ -113,7 +114,6 @@ public class DXGraphics : IDisposable
     {
         DeviceContext.Flush(IntPtr.Zero, IntPtr.Zero);
     }
-
 
 
     /// <summary>
