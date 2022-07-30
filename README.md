@@ -74,8 +74,9 @@ public class DXCanvas : DXControl
     }
 }
 
-See Demo project for full details.
 ```
+
+See Demo project for full details.
 
 ## License
 [MIT](LICENSE)
