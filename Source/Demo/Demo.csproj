@@ -14,9 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="D2Phap.DXControl" Version="1.0.3" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="11.3.0" />
     <PackageReference Include="Magick.NET.SystemWindowsMedia" Version="5.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DXControl\DXControl.csproj" />
   </ItemGroup>
 
 </Project>

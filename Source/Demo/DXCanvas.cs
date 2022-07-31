@@ -17,7 +17,7 @@ public class DXCanvas : DXControl
                 _d2dBitmap = null;
                 return;
             }
-
+            
             // create D2DBitmap from WICBitmapSource
             var bitmapProps = new D2D1_BITMAP_PROPERTIES()
             {

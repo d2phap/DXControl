@@ -23,36 +23,59 @@ public class DXControl : Control
     private DateTime _lastFpsUpdate = DateTime.UtcNow;
 
 
-    // Internal properties
-    #region Protected properties
-    internal IComObject<ID2D1Factory> Direct2DFactory;
-    internal IComObject<IDWriteFactory> DWriteFactory;
-    internal ID2D1HwndRenderTarget? RenderTarget;
-    internal ID2D1DeviceContext? DeviceContext;
+    // Protected properties
+    protected IComObject<ID2D1Factory> _d2DFactory;
+    protected IComObject<IDWriteFactory> _dWriteFactory;
+    protected ID2D1HwndRenderTarget? _renderTarget;
+    protected ID2D1DeviceContext? _deviceContext;
+    protected DXGraphics? _d2Graphics;
+
+
+    
+    // Public properties
+    #region Public properties
+
+    /// <summary>
+    /// Gets Direct2D factory.
+    /// </summary>
+    public IComObject<ID2D1Factory> D2DFactory => _d2DFactory;
+
+    
+    /// <summary>
+    /// Gets DirectWrite factory.
+    /// </summary>
+    public IComObject<IDWriteFactory> DWriteFactory => _dWriteFactory;
+
+    
+    /// <summary>
+    /// Gets render target for this control
+    /// </summary>
+    public ID2D1HwndRenderTarget? RenderTarget => _renderTarget;
 
 
     /// <summary>
+    /// Gets device context object.
+    /// </summary>
+    public ID2D1DeviceContext? DeviceContext => _deviceContext;
+
+    
+    /// <summary>
     /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="OnRender(DXGraphics)"/>.
     /// </summary>
-    internal DXGraphics? D2Graphics;
+    public DXGraphics? D2Graphics => _d2Graphics;
 
 
     /// <summary>
     /// Request to update frame by <see cref="OnFrame"/> event.
     /// </summary>
-    internal bool RequestUpdateFrame { get; set; } = true;
+    public bool RequestUpdateFrame { get; set; } = true;
 
 
     /// <summary>
     /// Enable FPS measurement.
     /// </summary>
-    internal bool CheckFPS { get; set; } = false;
-
-    #endregion // Internal properties
-
-
-    // Public properties
-    #region Public properties
+    public bool CheckFPS { get; set; } = false;
+    
 
     /// <summary>
     /// Gets, sets the DPI for drawing when using <see cref="DXGraphics"/>.
@@ -63,10 +86,10 @@ public class DXControl : Control
         get => _dpi;
         set
         {
-            if (DeviceContext == null) return;
+            if (_deviceContext == null) return;
 
             _dpi = value;
-            DeviceContext.SetDpi(_dpi, _dpi);
+            _deviceContext.SetDpi(_dpi, _dpi);
         }
     }
 
@@ -141,9 +164,9 @@ public class DXControl : Control
     {
         SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
-        Direct2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+        _d2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
 
-        DWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+        _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
     }
 
 
@@ -156,7 +179,7 @@ public class DXControl : Control
         if (DesignMode) return;
 
         DoubleBuffered = false;
-        CreateGraphicsResources();
+        CreateDirect2DResources();
 
         _ticker.Tick += Ticker_Tick;
         _ticker.Start();
@@ -168,22 +191,22 @@ public class DXControl : Control
         _ticker.Stop(1000);
         _ticker.Tick -= Ticker_Tick;
 
-        Direct2DFactory.Dispose();
-        DWriteFactory.Dispose();
+        _d2DFactory.Dispose();
+        _dWriteFactory.Dispose();
 
-        D2Graphics?.Dispose();
-        D2Graphics = null;
+        _d2Graphics?.Dispose();
+        _d2Graphics = null;
 
-        if (DeviceContext != null)
+        if (_deviceContext != null)
         {
-            Marshal.ReleaseComObject(DeviceContext);
-            DeviceContext = null;
+            Marshal.ReleaseComObject(_deviceContext);
+            _deviceContext = null;
         }
 
-        if (RenderTarget != null)
+        if (_renderTarget != null)
         {
-            Marshal.ReleaseComObject(RenderTarget);
-            RenderTarget = null;
+            Marshal.ReleaseComObject(_renderTarget);
+            _renderTarget = null;
         }
 
         GC.Collect();
@@ -198,7 +221,7 @@ public class DXControl : Control
         if (DesignMode) return;
 
 
-        RenderTarget?.Resize(new(ClientSize.Width, ClientSize.Height));
+        _renderTarget?.Resize(new(ClientSize.Width, ClientSize.Height));
 
         // update the control once size/windows state changed
         ResizeRedraw = true;
@@ -241,20 +264,20 @@ public class DXControl : Control
         }
 
         // make sure the 
-        CreateGraphicsResources();
-        if (DeviceContext == null || D2Graphics == null) return;
+        CreateDirect2DResources();
+        if (_deviceContext == null || _d2Graphics == null) return;
 
         var bgColor = BackColor.Equals(Color.Transparent) ? Parent.BackColor : BackColor;
         DoubleBuffered = false; // must be false
 
 
         // start Direct2D graphics drawing session
-        DeviceContext.BeginDraw();
-        D2Graphics.ClearBackground(new(bgColor.ToArgb()));
-        OnRender(D2Graphics);
+        _deviceContext.BeginDraw();
+        _d2Graphics.ClearBackground(new(bgColor.ToArgb()));
+        OnRender(_d2Graphics);
 
         // end drawing session
-        DeviceContext.EndDraw();
+        _deviceContext.EndDraw();
 
 
         // Use GDI+ to draw
@@ -309,35 +332,12 @@ public class DXControl : Control
         Frame?.Invoke(this, e);
     }
 
+    
     #endregion // Virtual functions
 
 
     // Private functions
     #region Private functions
-
-    /// <summary>
-    /// Create graphics resources.
-    /// </summary>
-    private void CreateGraphicsResources()
-    {
-        if (RenderTarget == null)
-        {
-            var hwndRenderTargetProps = new D2D1_HWND_RENDER_TARGET_PROPERTIES()
-            {
-                hwnd = Handle,
-                pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height),
-            };
-
-            Direct2DFactory.Object.CreateHwndRenderTarget(new D2D1_RENDER_TARGET_PROPERTIES(), hwndRenderTargetProps, out RenderTarget).ThrowOnError();
-
-            RenderTarget.SetDpi(BaseDpi, BaseDpi);
-            RenderTarget.Resize(new(ClientSize.Width, ClientSize.Height));
-
-
-            DeviceContext = (ID2D1DeviceContext)RenderTarget;
-            D2Graphics = new DXGraphics(DeviceContext, DWriteFactory);
-        }
-    }
 
 
     private void Ticker_Tick(object? sender, VerticalBlankTickerEventArgs e)
@@ -350,5 +350,35 @@ public class DXControl : Control
     }
 
     #endregion // Private functions
+
+
+    // Public functions
+    #region Public functions
+
+    /// <summary>
+    /// Create graphics resources.
+    /// </summary>
+    public void CreateDirect2DResources()
+    {
+        if (_renderTarget == null)
+        {
+            var hwndRenderTargetProps = new D2D1_HWND_RENDER_TARGET_PROPERTIES()
+            {
+                hwnd = Handle,
+                pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height),
+            };
+
+            _d2DFactory.Object.CreateHwndRenderTarget(new D2D1_RENDER_TARGET_PROPERTIES(), hwndRenderTargetProps, out _renderTarget).ThrowOnError();
+
+            _renderTarget.SetDpi(BaseDpi, BaseDpi);
+            _renderTarget.Resize(new(ClientSize.Width, ClientSize.Height));
+
+
+            _deviceContext = (ID2D1DeviceContext)_renderTarget;
+            _d2Graphics = new DXGraphics(_deviceContext, _dWriteFactory);
+        }
+    }
+
+    #endregion // Public functions
 
 }
