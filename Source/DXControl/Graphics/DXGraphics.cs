@@ -175,6 +175,42 @@ public class DXGraphics : IDisposable
     #region Draw/Fill Rectangle
 
     /// <summary>
+    /// Draw a rounded rectangle and fill its background.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radius,
+        _D3DCOLORVALUE borderColor, _D3DCOLORVALUE bgColor, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        FillRoundedRectangle(rect, radius, radius, bgColor);
+        DrawRoundedRectangle(rect, radius, radius, borderColor, strokeWidth, strokeStyle);
+    }
+    
+
+    /// <summary>
+    /// Draw a rounded rectangle and fill its background.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radius,
+        ID2D1Brush borderBrush, ID2D1Brush bgBrush, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        FillRoundedRectangle(rect, radius, radius, bgBrush);
+        DrawRoundedRectangle(rect, radius, radius, borderBrush, strokeWidth, strokeStyle);
+    }
+
+
+    /// <summary>
+    /// Draw a rounded rectangle and fill its background.
+    /// </summary>
+    public void DrawRoundedRectangle(D2D_RECT_F rect, float radiusX, float radiusY,
+        ID2D1Brush borderBrush, ID2D1Brush bgBrush, float strokeWidth = 1,
+        D2D1_STROKE_STYLE_PROPERTIES? strokeStyle = null)
+    {
+        FillRoundedRectangle(rect, radiusX, radiusY, bgBrush);
+        DrawRoundedRectangle(rect, radiusX, radiusY, borderBrush, strokeWidth, strokeStyle);
+    }
+
+
+    /// <summary>
     /// Draw a rectangle.
     /// </summary>
     public void DrawRectangle(D2D_RECT_F rect, _D3DCOLORVALUE color, float strokeWidth = 1,
@@ -489,8 +525,8 @@ public class DXGraphics : IDisposable
     /// Measure text.
     /// </summary>
     public D2D_SIZE_F MeasureText(string text, string fontFamilyName, float fontSize,
-        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR,
-        float textDpi = 96.0f)
+        float maxWidth = float.MaxValue, float maxHeight = float.MaxValue, float textDpi = 96.0f,
+        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR)
     {
         // fix DPI
         fontSize *= textDpi / 96.0f;
@@ -499,7 +535,7 @@ public class DXGraphics : IDisposable
             weight: fontWeight);
 
 
-        using var layout = DWriteFactory.CreateTextLayout(format, text);
+        using var layout = DWriteFactory.CreateTextLayout(format, text, 0, maxWidth, maxHeight);
         layout.Object.GetMetrics(out var metrics);
 
         return new D2D_SIZE_F(metrics.width, metrics.height);

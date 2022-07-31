@@ -20,8 +20,7 @@
     <IncludeSymbols>True</IncludeSymbols>
     <PackageReleaseNotes></PackageReleaseNotes>
     <Authors>Duong Dieu Phap</Authors>
-    <SignAssembly>False</SignAssembly>
-    <VersionPrefix>1.0.3</VersionPrefix>
+    <VersionPrefix>1.0.4</VersionPrefix>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
       <PublishRepositoryUrl>true</PublishRepositoryUrl>
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -30,11 +29,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>portable</DebugType>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>portable</DebugType>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
 

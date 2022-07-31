@@ -1,4 +1,4 @@
-# DXControl
+# D2Phap.DXControl
 
 - A WinForms hybrid control that supports Direct2D and GDI+ drawing thanks to [DirectN](https://github.com/smourier/DirectN) and [WicNet](https://github.com/smourier/WicNet).
 - This control is used in [ImageGlass](https://github.com/d2phap/ImageGlass) software since version 9.0.
@@ -36,7 +36,7 @@ Draw 2 rectangles by Direct2D and GDI+ graphics, then animate it to the right si
 
 
 ```cs
-using D2phap;
+using D2Phap;
 
 // create a WinForms custom control that extends from DXControl
 public class DXCanvas : DXControl
