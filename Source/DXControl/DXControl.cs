@@ -23,32 +23,32 @@ public class DXControl : Control
     private DateTime _lastFpsUpdate = DateTime.UtcNow;
 
 
-    // Protected properties
+    // Internal properties
     #region Protected properties
-    protected IComObject<ID2D1Factory> Direct2DFactory;
-    protected IComObject<IDWriteFactory> DWriteFactory;
-    protected ID2D1HwndRenderTarget? RenderTarget;
-    protected ID2D1DeviceContext? DeviceContext;
+    internal IComObject<ID2D1Factory> Direct2DFactory;
+    internal IComObject<IDWriteFactory> DWriteFactory;
+    internal ID2D1HwndRenderTarget? RenderTarget;
+    internal ID2D1DeviceContext? DeviceContext;
 
 
     /// <summary>
     /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="OnRender(DXGraphics)"/>.
     /// </summary>
-    protected DXGraphics? D2Graphics;
+    internal DXGraphics? D2Graphics;
 
 
     /// <summary>
     /// Request to update frame by <see cref="OnFrame"/> event.
     /// </summary>
-    protected bool RequestUpdateFrame { get; set; } = true;
+    internal bool RequestUpdateFrame { get; set; } = true;
 
 
     /// <summary>
     /// Enable FPS measurement.
     /// </summary>
-    protected bool CheckFPS { get; set; } = false;
+    internal bool CheckFPS { get; set; } = false;
 
-    #endregion // Protected properties
+    #endregion // Internal properties
 
 
     // Public properties
