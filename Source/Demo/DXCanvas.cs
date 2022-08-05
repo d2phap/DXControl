@@ -1,4 +1,9 @@
-﻿using D2Phap;
+﻿/*
+MIT License
+Copyright (C) 2022 DUONG DIEU PHAP
+Project & license info: https://github.com/d2phap/DXControl
+*/
+using D2Phap;
 using DirectN;
 using WicNet;
 
@@ -6,13 +11,17 @@ namespace Demo;
 
 public class DXCanvas : DXControl
 {
-    private ID2D1Bitmap? _d2dBitmap = null;
-    
+    private IComObject<ID2D1Bitmap>? _d2dBitmap = null;
+    private D2D_RECT_F rectText = new(100f, 100f, new(400, 200));
+
     public WicBitmapSource? Image
     {
         set
         {
-            if (DeviceContext == null || value == null)
+            DXHelper.DisposeD2D1Bitmap(ref _d2dBitmap);
+            GC.Collect();
+
+            if (Device == null || value == null)
             {
                 _d2dBitmap = null;
                 return;
@@ -31,9 +40,11 @@ public class DXCanvas : DXControl
             };
             var bitmapPropsPtr = bitmapProps.StructureToPtr();
 
-            DeviceContext.CreateBitmapFromWicBitmap(value.ComObject.Object, bitmapPropsPtr,
-                out _d2dBitmap)
+            Device.CreateBitmapFromWicBitmap(value.ComObject.Object, bitmapPropsPtr,
+                out ID2D1Bitmap bmp)
                 .ThrowOnError();
+
+            _d2dBitmap = new ComObject<ID2D1Bitmap>(bmp);
         }
     }
 
@@ -44,7 +55,7 @@ public class DXCanvas : DXControl
     }
 
 
-    protected override void OnRender(DXGraphics g)
+    protected override void OnDirect2DRender(DXGraphics g)
     {
         var p1 = new D2D_POINT_2F(0, 0);
         var p2 = new D2D_POINT_2F(ClientSize.Width, ClientSize.Height);
@@ -57,8 +68,8 @@ public class DXCanvas : DXControl
         // draw image
         if (_d2dBitmap != null)
         {
-            _d2dBitmap.GetSize(out var size);
-            g.DrawBitmap(_d2dBitmap,
+            _d2dBitmap.Object.GetSize(out var size);
+            g.DrawBitmap(_d2dBitmap.Object,
                 new D2D_RECT_F(10f, 10f, size.width * 1, size.height * 1),
                 new D2D_RECT_F(0, 0, size.width, size.height));
         }
@@ -95,17 +106,20 @@ public class DXCanvas : DXControl
 
     }
 
+    
 
-    protected override void OnRender(Graphics g)
+    protected override void OnGdiPlusRender(Graphics g)
     {
         using var pen = new Pen(Color.Red, 5);
         g.DrawRectangle(pen, new Rectangle(
             (int)rectText.left, (int)rectText.top - 50,
             (int)rectText.Width, (int)rectText.Height));
+
+        g.DrawString($"FPS: {FPS} - GDI+", Font, Brushes.Purple, new PointF(100, 100));
     }
 
 
-    private D2D_RECT_F rectText = new(100f, 100f, new(400, 200));
+    
     protected override void OnFrame(FrameEventArgs e)
     {
         base.OnFrame(e);
