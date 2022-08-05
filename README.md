@@ -7,8 +7,8 @@
 
 
 ## Resource links
-- Project url: [https://github.com/d2phap/DXControl](https://github.com/d2phap/DXControl)
 - Nuget package: [https://www.nuget.org/packages/D2Phap.DXControl](https://www.nuget.org/packages/D2Phap.DXControl)
+- Project url: [https://github.com/d2phap/DXControl](https://github.com/d2phap/DXControl)
 - About: [https://imageglass.org/about](https://imageglass.org/about)
 
 
@@ -46,10 +46,13 @@ public class DXCanvas : DXControl
     public DXCanvas()
     {
         EnableAnimation = true;
+
+        // use Direct2D
+        UseHardwareAcceleration = true;
     }
 
     // use Direct2D graphics
-    protected override void OnRender(DXGraphics g)
+    protected override void OnDirect2DRender(DXGraphics g)
     {
         // draw a yellow rectangle with green border
         g.FillRectangle(rectText, _D3DCOLORVALUE.FromCOLORREF(_D3DCOLORVALUE.Yellow.Int32Value, 100));
@@ -58,7 +61,7 @@ public class DXCanvas : DXControl
 
 
     // Use GDI+ graphics
-    protected override void OnRender(Graphics g)
+    protected override void OnGdiPlusRender(Graphics g)
     {
         // draw a yellow rectangle with green border
         using var pen = new Pen(Color.Red, 5);
