@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PackageId>D2Phap.$(AssemblyName)</PackageId>
+    <PackageId>$(AssemblyName)</PackageId>
     <RootNamespace>D2Phap</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>WinForms hybrid control that supports Direct2D and GDI+</Title>
@@ -26,6 +26,7 @@
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
       <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
       <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <AssemblyName>$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

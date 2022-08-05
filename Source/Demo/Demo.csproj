@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DXControl\DXControl.csproj" />
+    <ProjectReference Include="..\DXControl\D2Phap.DXControl.csproj" />
   </ItemGroup>
 
 </Project>
