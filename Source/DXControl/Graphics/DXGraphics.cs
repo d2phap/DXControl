@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 Copyright (C) 2022 DUONG DIEU PHAP
-Project & license info: https://github.com/d2phap/DXControls
+Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
 using System.Runtime.InteropServices;
@@ -184,7 +184,7 @@ public class DXGraphics : IDisposable
         FillRoundedRectangle(rect, radius, radius, bgColor);
         DrawRoundedRectangle(rect, radius, radius, borderColor, strokeWidth, strokeStyle);
     }
-    
+
 
     /// <summary>
     /// Draw a rounded rectangle and fill its background.
@@ -526,16 +526,20 @@ public class DXGraphics : IDisposable
     /// </summary>
     public D2D_SIZE_F MeasureText(string text, string fontFamilyName, float fontSize,
         float maxWidth = float.MaxValue, float maxHeight = float.MaxValue, float textDpi = 96.0f,
-        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR)
+        DWRITE_FONT_WEIGHT weight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_NORMAL,
+        DWRITE_FONT_STYLE style = DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH stretch = DWRITE_FONT_STRETCH.DWRITE_FONT_STRETCH_NORMAL)
     {
         // fix DPI
-        fontSize *= textDpi / 96.0f;
+        var dpiScale = textDpi / 96.0f;
+        fontSize *= dpiScale * dpiScale;
 
         using var format = DWriteFactory.CreateTextFormat(fontFamilyName, fontSize,
-            weight: fontWeight);
+            weight: weight, style: style, stretch: stretch);
+        format.Object.SetWordWrapping(DWRITE_WORD_WRAPPING.DWRITE_WORD_WRAPPING_EMERGENCY_BREAK);
 
-
-        using var layout = DWriteFactory.CreateTextLayout(format, text, 0, maxWidth, maxHeight);
+        using var layout = DWriteFactory.CreateTextLayout(format, text, text.Length,
+            maxWidth, maxHeight);
         layout.Object.GetMetrics(out var metrics);
 
         return new D2D_SIZE_F(metrics.width, metrics.height);
@@ -549,7 +553,7 @@ public class DXGraphics : IDisposable
         D2D_RECT_F rect, _D3DCOLORVALUE color, float? textDpi = null,
         DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_LEADING,
         DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
-        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR,
+        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_NORMAL,
         D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT)
     {
         // create solid brush
@@ -574,7 +578,7 @@ public class DXGraphics : IDisposable
         D2D_RECT_F rect, ID2D1Brush brush, float? textDpi = null,
         DWRITE_TEXT_ALIGNMENT hAlign = DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_LEADING,
         DWRITE_PARAGRAPH_ALIGNMENT vAlign = DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
-        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_REGULAR,
+        DWRITE_FONT_WEIGHT fontWeight = DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_NORMAL,
         D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT)
     {
         // backup base dpi
