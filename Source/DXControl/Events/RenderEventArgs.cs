@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 Copyright (C) 2022 DUONG DIEU PHAP
-Project & license info: https://github.com/d2phap/DXControls
+Project & license info: https://github.com/d2phap/DXControl
 */
 namespace D2Phap;
 

@@ -7,18 +7,18 @@ namespace D2Phap;
 
 
 /// <summary>
-/// Provides the data for <see cref="DXControl.Frame"/> event.
+/// Provides the data for <see cref="DXControl.RenderByDirect2D"/> event.
 /// </summary>
-public class FrameEventArgs : EventArgs
+public class RenderByDirect2DEventArgs : EventArgs
 {
     /// <summary>
     /// Gets the number of ticks
     /// </summary>
-    public long Ticks { get; init; }
+    public DXGraphics Graphics { get; init; }
 
 
-    public FrameEventArgs(long ticks)
+    public RenderByDirect2DEventArgs(DXGraphics g)
     {
-        Ticks = ticks;
+        Graphics = g;
     }
 }

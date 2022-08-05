@@ -7,18 +7,18 @@ namespace D2Phap;
 
 
 /// <summary>
-/// Provides the data for <see cref="DXControl.Frame"/> event.
+/// Provides the data for <see cref="DXControl.RenderByGdiPLus"/> event.
 /// </summary>
-public class FrameEventArgs : EventArgs
+public class RenderByGdiPlusEventArgs : EventArgs
 {
     /// <summary>
     /// Gets the number of ticks
     /// </summary>
-    public long Ticks { get; init; }
+    public Graphics Graphics { get; init; }
 
 
-    public FrameEventArgs(long ticks)
+    public RenderByGdiPlusEventArgs(Graphics g)
     {
-        Ticks = ticks;
+        Graphics = g;
     }
 }
