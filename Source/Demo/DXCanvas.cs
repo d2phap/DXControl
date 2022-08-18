@@ -11,22 +11,22 @@ namespace Demo;
 
 public class DXCanvas : DXControl
 {
-    private IComObject<ID2D1Bitmap>? _d2dBitmap = null;
-    private Rectangle rectText = new(100, 100, 400, 200);
+    private IComObject<ID2D1Bitmap>? _bitmapD2d = null;
+    private Rectangle rectText = new(100, 100, 0, 200);
 
     public WicBitmapSource? Image
     {
         set
         {
-            DXHelper.DisposeD2D1Bitmap(ref _d2dBitmap);
+            DXHelper.DisposeD2D1Bitmap(ref _bitmapD2d);
             GC.Collect();
 
             if (Device == null || value == null)
             {
-                _d2dBitmap = null;
+                _bitmapD2d = null;
                 return;
             }
-            
+
             // create D2DBitmap from WICBitmapSource
             var bitmapProps = new D2D1_BITMAP_PROPERTIES()
             {
@@ -44,7 +44,7 @@ public class DXCanvas : DXControl
                 out ID2D1Bitmap bmp)
                 .ThrowOnError();
 
-            _d2dBitmap = new ComObject<ID2D1Bitmap>(bmp);
+            _bitmapD2d = new ComObject<ID2D1Bitmap>(bmp);
         }
     }
 
@@ -65,14 +65,14 @@ public class DXCanvas : DXControl
         g.DrawLine(new(ClientSize.Width, 0), new(0, ClientSize.Height), Color.Red, 3.0f);
 
 
-        // draw image
-        if (_d2dBitmap != null)
-        {
-            _d2dBitmap.Object.GetSize(out var size);
-            g.DrawBitmap(_d2dBitmap.Object,
-                new RectangleF(10f, 10f, size.width * 1, size.height * 1),
-                new RectangleF(0, 0, size.width, size.height));
-        }
+        //// draw image
+        //if (_bitmapD2d != null)
+        //{
+        //    _bitmapD2d.Object.GetSize(out var size);
+        //    g.DrawBitmap(_bitmapD2d.Object,
+        //        new RectangleF(10f, 10f, size.width * 1, size.height * 1),
+        //        new RectangleF(0, 0, size.width, size.height));
+        //}
 
         // draw rectangle border
         g.DrawRectangle(10f, 10f, ClientSize.Width - 20, ClientSize.Height - 20, 0,
@@ -88,30 +88,24 @@ public class DXCanvas : DXControl
         g.DrawRectangle(rectText, 0, Color.Green, Color.FromArgb(100, Color.Yellow));
 
         // draw text
-        g.DrawText($"{FPS} Dương Diệu Pháp 😛💋", Font.Name, Font.Size * 1.5f, rectText,
+        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, Font.Size * 1.5f, rectText,
             Color.Lavender, DeviceDpi, StringAlignment.Center, isBold: true, isItalic: true);
 
 
         // draw and fill ellipse
         g.DrawEllipse(400, 400, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
 
+
+        var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
+        g.DrawText($"FPS: {FPS} - {engine}", Font.Name, Font.Size * 2, 10, 10, Color.Purple, DeviceDpi);
+
     }
 
     
-
-    protected override void OnGdiPlusRender(Graphics g)
-    {
-        using var pen = new Pen(Color.Red, 5);
-        g.DrawRectangle(pen, rectText);
-
-        g.DrawString($"FPS: {FPS} - GDI+", Font, Brushes.Purple, new PointF(100, 100));
-    }
-
-
     
     protected override void OnFrame(FrameEventArgs e)
     {
         base.OnFrame(e);
-        rectText.X++;
+        rectText.Width++;
     }
 }
