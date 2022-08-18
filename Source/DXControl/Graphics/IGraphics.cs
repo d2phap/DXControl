@@ -45,8 +45,15 @@ public interface IGraphics : IDisposable
 
     #region Draw lines
 
+    /// <summary>
+    /// Draw line.
+    /// </summary>
     void DrawLine(float x1, float y1, float x2, float y2, Color c, float strokeWidth = 1f);
-    void DrawLine(Point p1, Point p2, Color c, float strokeWidth = 1f);
+
+
+    /// <summary>
+    /// Draw line.
+    /// </summary>
     void DrawLine(PointF p1, PointF p2, Color c, float strokeWidth = 1f);
 
     #endregion // Draw lines
@@ -134,13 +141,13 @@ public interface IGraphics : IDisposable
     #region Others
 
     /// <summary>
-    /// Executes all pending drawing commands.
+    /// Forces immediate execution of all operations currently on the stack.
     /// </summary>
     void Flush();
 
 
     /// <summary>
-    /// Clear the background by the given color.
+    /// Fills the entire drawing surface with the specified color.
     /// </summary>
     void ClearBackground(Color color);
 

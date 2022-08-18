@@ -113,6 +113,7 @@ public class D2DGraphics : IGraphics
 
         DeviceContext = dc;
         DWriteFactory = wf;
+        UseAntialias = true;
     }
 
 
@@ -201,11 +202,6 @@ public class D2DGraphics : IGraphics
     }
 
     public void DrawLine(PointF p1, PointF p2, Color c, float strokeWidth = 1)
-    {
-        DrawLine(p1, p2, c, strokeWidth);
-    }
-
-    public void DrawLine(Point p1, Point p2, Color c, float strokeWidth = 1)
     {
         var point1 = new D2D_POINT_2F(p1.X, p1.Y);
         var point2 = new D2D_POINT_2F(p2.X, p2.Y);
@@ -316,8 +312,8 @@ public class D2DGraphics : IGraphics
             ? DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_BOLD
             : DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_NORMAL;
         var fontStyle = isItalic
-            ? DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_NORMAL
-            : DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_ITALIC;
+            ? DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_ITALIC
+            : DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_NORMAL;
         var horzAlign = hAlign switch
         {
             StringAlignment.Near => DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_LEADING,
@@ -325,7 +321,7 @@ public class D2DGraphics : IGraphics
             StringAlignment.Far => DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_TRAILING,
             _ => DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_LEADING,
         };
-        var vertAlign = hAlign switch
+        var vertAlign = vAlign switch
         {
             StringAlignment.Near => DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
             StringAlignment.Center => DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
