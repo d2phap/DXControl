@@ -143,7 +143,9 @@ public class D2DGraphics : IGraphics
 
     public void DrawEllipse(float x, float y, float radius, Color borderColor, Color? fillColor, float strokeWidth = 1)
     {
-        DrawEllipse(x, y, radius * 2, radius * 2, borderColor, fillColor, strokeWidth);
+        var rect = new RectangleF(x - radius, y - radius, radius * 2, radius * 2);
+
+        DrawEllipse(rect, borderColor, fillColor, strokeWidth);
     }
 
 
