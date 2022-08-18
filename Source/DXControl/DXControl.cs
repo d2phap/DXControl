@@ -27,7 +27,7 @@ public class DXControl : Control
     private readonly IComObject<IDWriteFactory> _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
     private ID2D1HwndRenderTarget? _renderTarget;
     private ID2D1DeviceContext? _device;
-    private DXGraphics? _graphics;
+    private D2DGraphics? _graphics;
 
 
     private bool _useHardwardAcceleration = true;
@@ -86,10 +86,10 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="OnDirect2DRender(DXGraphics)"/>.
+    /// Gets the <see cref='D2DGraphics'/> object used to draw in <see cref="Render"/>.
     /// </summary>
     [Browsable(false)]
-    public DXGraphics? D2Graphics => _graphics;
+    public D2DGraphics? D2Graphics => _graphics;
 
 
     /// <summary>
@@ -189,9 +189,9 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Occurs when the control is being rendered by Direct2D <see cref="DXGraphics"/>.
+    /// Occurs when the control is being rendered by <see cref="IGraphics"/>.
     /// </summary>
-    public event EventHandler<RenderByDirect2DEventArgs>? RenderByDirect2D;
+    public event EventHandler<RenderEventArgs>? Render;
 
 
     /// <summary>
@@ -382,11 +382,11 @@ public class DXControl : Control
         {
             DoubleBuffered = false;
 
-            _graphics ??= new DXGraphics(_device, _dWriteFactory);
+            _graphics ??= new D2DGraphics(_device, _dWriteFactory);
 
             _device.BeginDraw();
             _device.Clear(_D3DCOLORVALUE.FromColor(BackColor));
-            OnDirect2DRender(_graphics);
+            OnRender(_graphics);
             _device.EndDraw();
         }
         // use GDI+ graphics
@@ -428,13 +428,12 @@ public class DXControl : Control
     #region New / Virtual functions
 
     /// <summary>
-    /// Draws control by Direct2D <see cref="D2Graphics"/> object.
+    /// Triggers <see cref="Render"/> event.
     /// </summary>
-    protected virtual void OnDirect2DRender(DXGraphics g)
+    protected virtual void OnRender(IGraphics g)
     {
         if (!IsReady) return;
-
-        RenderByDirect2D?.Invoke(this, new(g));
+        Render?.Invoke(this, new(g));
     }
 
 
@@ -532,7 +531,7 @@ public class DXControl : Control
         _renderTarget.Resize(new((uint)ClientSize.Width, (uint)ClientSize.Height));
 
         _device = (ID2D1DeviceContext)_renderTarget;
-        _graphics = new DXGraphics(_device, _dWriteFactory);
+        _graphics = new D2DGraphics(_device, _dWriteFactory);
     }
 
 
