@@ -3,6 +3,8 @@ MIT License
 Copyright (C) 2022 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
+using DirectN;
+
 namespace D2Phap;
 
 
@@ -34,7 +36,15 @@ public interface IGraphics : IDisposable
     /// <summary>
     /// Draw bitmap.
     /// </summary>
-    public void DrawBitmap(object? bitmap,
+    /// <param name="bitmap">
+    /// The bitmap object is either <see cref="ID2D1Bitmap"/> for <see cref="D2DGraphics"/>, or <see cref="Bitmap"/> for <see cref="GdipGraphics"/>.
+    /// </param>
+    /// <param name="destRect"></param>
+    /// <param name="srcRect"></param>
+    /// <param name="interpolation"></param>
+    /// <param name="opacity"></param>
+    /// <param name="dpi"></param>
+    void DrawBitmap(object? bitmap,
         RectangleF? destRect = null,
         RectangleF? srcRect = null,
         InterpolationMode interpolation = InterpolationMode.NearestNeighbor,

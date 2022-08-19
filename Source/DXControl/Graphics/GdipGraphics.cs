@@ -4,6 +4,7 @@ Copyright (C) 2022 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
 
 namespace D2Phap;
@@ -107,8 +108,11 @@ public class GdipGraphics : IGraphics
         srcRect ??= new(0, 0, bmp.Width, bmp.Height);
         destRect ??= new(0, 0, bmp.Width, bmp.Height);
 
-
+        var currentMode = _g.InterpolationMode;
+        _g.InterpolationMode = ConvertInterpolationMode(interpolation);
         _g.DrawImage(bmp, destRect.Value, srcRect.Value, GraphicsUnit.Pixel);
+
+        _g.InterpolationMode = currentMode;
     }
 
     #endregion // Draw bitmap
@@ -273,7 +277,7 @@ public class GdipGraphics : IGraphics
     /// </summary>
     /// <param name="bounds">Input rectangle</param>
     /// <param name="radius">Border radius</param>
-    private static GraphicsPath GetRoundRectanglePath(RectangleF bounds, float radius)
+    public static GraphicsPath GetRoundRectanglePath(RectangleF bounds, float radius)
     {
         var diameter = Math.Abs(radius * 2);
         var size = new SizeF(diameter, diameter);
@@ -305,4 +309,55 @@ public class GdipGraphics : IGraphics
         return path;
     }
 
+
+    /// <summary>  
+    /// Changes opacity of the input image.
+    /// </summary>  
+    /// <param name="img">The input image.</param>  
+    /// <param name="opacity">Opacity factor, from <c>0.0</c> to <c>1.0</c>.</param>  
+    public static Bitmap SetImageOpacity(Bitmap img, float opacity)
+    {
+        // create a Bitmap the size of the image provided  
+        var bmp = new Bitmap(img.Width, img.Height);
+
+        // create a graphics object from the image  
+        using var g = Graphics.FromImage(bmp);
+
+
+        // create a color matrix object  
+        var matrix = new ColorMatrix
+        {
+            // set the opacity  
+            Matrix33 = opacity,
+        };
+
+        // create image attributes  
+        var attributes = new ImageAttributes();
+
+        // set the color(opacity) of the image  
+        attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+        // now draw the image  
+        g.DrawImage(img, new Rectangle(0, 0, bmp.Width, bmp.Height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, attributes);
+
+        return bmp;
+    }
+
+
+    /// <summary>
+    /// Converts <see cref="InterpolationMode"/> to <see cref="System.Drawing.Drawing2D.InterpolationMode"/>.
+    /// </summary>
+    public static System.Drawing.Drawing2D.InterpolationMode ConvertInterpolationMode(InterpolationMode mode)
+    {
+        return mode switch
+        {
+            InterpolationMode.NearestNeighbor => System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor,
+            InterpolationMode.Linear => System.Drawing.Drawing2D.InterpolationMode.Low,
+            InterpolationMode.Cubic => System.Drawing.Drawing2D.InterpolationMode.Bicubic,
+            InterpolationMode.SampleLinear => System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear,
+            InterpolationMode.Antisotropic => System.Drawing.Drawing2D.InterpolationMode.High,
+            InterpolationMode.HighQualityBicubic => System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic,
+            _ => System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor
+        };
+    }
 }

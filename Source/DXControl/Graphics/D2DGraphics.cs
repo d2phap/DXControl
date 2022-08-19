@@ -124,18 +124,31 @@ public class D2DGraphics : IGraphics
     {
         if (bitmap is not ID2D1Bitmap bmp) return;
 
-        bmp.GetSize(out var bmpSize);
-        srcRect ??= new(0, 0, bmpSize.width, bmpSize.height);
-        destRect ??= new(0, 0, bmpSize.width, bmpSize.height);
+        D2D_RECT_F? sourceRect = null;
+        D2D_RECT_F? destinationRect = null;
 
-        var sourceRect = new D2D_RECT_F(srcRect.Value.Left, srcRect.Value.Top,
-            srcRect.Value.Right, srcRect.Value.Bottom);
-        var destinationRect = new D2D_RECT_F(destRect.Value.Left, destRect.Value.Top,
-            destRect.Value.Right, destRect.Value.Bottom);
 
+        if (srcRect != null)
+        {
+            sourceRect = new D2D_RECT_F(
+                srcRect.Value.Left,
+                srcRect.Value.Top,
+                srcRect.Value.Right,
+                srcRect.Value.Bottom);
+        }
+
+        if (destRect != null)
+        {
+            destinationRect = new D2D_RECT_F(
+                destRect.Value.Left,
+                destRect.Value.Top,
+                destRect.Value.Right,
+                destRect.Value.Bottom);
+        }
 
         DeviceContext.DrawBitmap(bmp, opacity, (D2D1_INTERPOLATION_MODE)interpolation, destinationRect, sourceRect);
     }
+
 
     #endregion // Draw bitmap
 
