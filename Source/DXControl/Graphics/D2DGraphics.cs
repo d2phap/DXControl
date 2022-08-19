@@ -158,7 +158,7 @@ public class D2DGraphics : IGraphics
 
     public void DrawEllipse(float x, float y, float width, float height, Color borderColor, Color? fillColor, float strokeWidth = 1)
     {
-        var ellipse = new D2D1_ELLIPSE(x, y, width / 2, height / 2);
+        var ellipse = new D2D1_ELLIPSE(x + width / 2, y + height / 2, width / 2, height / 2);
 
         // draw background color -----------------------------------
         if (fillColor != null)
