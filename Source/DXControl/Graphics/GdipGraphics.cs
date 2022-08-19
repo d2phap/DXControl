@@ -140,7 +140,7 @@ public class GdipGraphics : IGraphics
             _g.FillEllipse(bgBrush, rect);
         }
 
-        using var borderPen = new Pen(borderColor);
+        using var borderPen = new Pen(borderColor, strokeWidth);
         _g.DrawEllipse(borderPen, rect);
     }
 
