@@ -23,6 +23,8 @@ public partial class Form1 : Form
     {
         using var imgM = new MagickImage(Environment.GetCommandLineArgs()[1]);
         canvas.Image = FromBitmapSource(imgM.ToBitmapSource());
+
+        canvas.Bitmap = new Bitmap(Environment.GetCommandLineArgs()[1], true);
     }
 
     public static WicBitmapSource? FromBitmapSource(BitmapSource bmp)

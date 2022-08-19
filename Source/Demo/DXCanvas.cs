@@ -40,6 +40,7 @@ public class DXCanvas : DXControl
             };
             var bitmapPropsPtr = bitmapProps.StructureToPtr();
 
+            value.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
             Device.CreateBitmapFromWicBitmap(value.ComObject.Object, bitmapPropsPtr,
                 out ID2D1Bitmap bmp)
                 .ThrowOnError();
@@ -47,6 +48,8 @@ public class DXCanvas : DXControl
             _bitmapD2d = new ComObject<ID2D1Bitmap>(bmp);
         }
     }
+
+    public Bitmap? Bitmap { get; set; }
 
 
     public DXCanvas()
@@ -61,18 +64,30 @@ public class DXCanvas : DXControl
         var p2 = new Point(ClientSize.Width, ClientSize.Height);
 
         // draw X
-        g.DrawLine(p1, p2, Color.Blue, 3.0f);
+        g.DrawLine(p1, p2, Color.Blue, 10.0f);
         g.DrawLine(new(ClientSize.Width, 0), new(0, ClientSize.Height), Color.Red, 3.0f);
 
 
-        //// draw image
-        //if (_bitmapD2d != null)
-        //{
-        //    _bitmapD2d.Object.GetSize(out var size);
-        //    g.DrawBitmap(_bitmapD2d.Object,
-        //        new RectangleF(10f, 10f, size.width * 1, size.height * 1),
-        //        new RectangleF(0, 0, size.width, size.height));
-        //}
+        // draw D2DBitmap image
+        if (UseHardwareAcceleration && _bitmapD2d != null)
+        {
+            _bitmapD2d.Object.GetSize(out var size);
+            g.DrawBitmap(_bitmapD2d.Object,
+                destRect: new RectangleF(50, 50, size.width * 5, size.height * 5),
+                srcRect: new RectangleF(0, 0, size.width, size.height),
+                interpolation: InterpolationMode.NearestNeighbor
+                );
+        }
+        // draw GDI+ image
+        else if (!UseHardwareAcceleration && Bitmap != null)
+        {
+            g.DrawBitmap(Bitmap,
+                destRect: new RectangleF(50, 50, Bitmap.Width * 5, Bitmap.Height * 5),
+                srcRect: new RectangleF(0, 0, Bitmap.Width, Bitmap.Height),
+                interpolation: InterpolationMode.NearestNeighbor
+                );
+        }
+
 
         // draw rectangle border
         g.DrawRectangle(10f, 10f, ClientSize.Width - 20, ClientSize.Height - 20, 0,
@@ -88,20 +103,19 @@ public class DXCanvas : DXControl
         g.DrawRectangle(rectText, 0, Color.Green, Color.FromArgb(100, Color.Yellow));
 
         // draw text
-        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, Font.Size * 1.5f, rectText,
+        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, 12, rectText,
             Color.Lavender, DeviceDpi, StringAlignment.Center, isBold: true, isItalic: true);
 
 
         // draw and fill ellipse
-        g.DrawEllipse(400, 400, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
+        g.DrawEllipse(200, 200, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
 
 
         var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
-        g.DrawText($"FPS: {FPS} - {engine}", Font.Name, Font.Size * 2, 10, 10, Color.Purple, DeviceDpi);
+        g.DrawText($"FPS: {FPS} - {engine}", Font.Name, 15, 0, 0, Color.Purple, DeviceDpi);
 
     }
 
-    
     
     protected override void OnFrame(FrameEventArgs e)
     {
