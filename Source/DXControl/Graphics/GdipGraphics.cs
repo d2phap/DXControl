@@ -80,7 +80,7 @@ public class GdipGraphics : IGraphics
         {
             _useAntialias = value;
             _g.SmoothingMode = value ? SmoothingMode.AntiAlias : SmoothingMode.Default;
-            _g.TextRenderingHint = TextRenderingHint.AntiAlias;
+            _g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
         }
     }
 
@@ -241,10 +241,12 @@ public class GdipGraphics : IGraphics
 
     public SizeF MeasureText(string text, string fontFamilyName, float fontSize, SizeF size, float textDpi = 96, bool isBold = false, bool isItalic = false)
     {
+        var dpiFactor = textDpi / 96.0f;
+        fontSize *= dpiFactor * dpiFactor;
+
         var style = FontStyle.Regular;
         if (isBold) style |= FontStyle.Bold;
         if (isItalic) style |= FontStyle.Italic;
-
 
         using var font = new Font(fontFamilyName, fontSize, style, GraphicsUnit.Pixel);
 

@@ -346,6 +346,7 @@ public class D2DGraphics : IGraphics
             weight: fontWeight, style: fontStyle);
         format.Object.SetTextAlignment(horzAlign);
         format.Object.SetParagraphAlignment(vertAlign);
+        format.Object.SetWordWrapping(DWRITE_WORD_WRAPPING.DWRITE_WORD_WRAPPING_WRAP);
 
 
         // create solid brush
@@ -368,6 +369,7 @@ public class D2DGraphics : IGraphics
         }
     }
 
+
     public SizeF MeasureText(string text, string fontFamilyName, float fontSize, float maxWidth = float.MaxValue, float maxHeight = float.MaxValue, float textDpi = 96, bool isBold = false, bool isItalic = false)
     {
         var size = new SizeF(maxWidth, maxHeight);
@@ -387,12 +389,13 @@ public class D2DGraphics : IGraphics
             ? DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_BOLD
             : DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_NORMAL;
         var fontStyle = isItalic
-            ? DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_NORMAL
-            : DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_ITALIC;
+            ? DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_ITALIC
+            : DWRITE_FONT_STYLE.DWRITE_FONT_STYLE_NORMAL;
 
         using var format = DWriteFactory.CreateTextFormat(fontFamilyName, fontSize,
-            weight: fontWeight, style: fontStyle, stretch: DWRITE_FONT_STRETCH.DWRITE_FONT_STRETCH_NORMAL);
-        format.Object.SetWordWrapping(DWRITE_WORD_WRAPPING.DWRITE_WORD_WRAPPING_EMERGENCY_BREAK);
+            weight: fontWeight, style: fontStyle,
+            stretch: DWRITE_FONT_STRETCH.DWRITE_FONT_STRETCH_NORMAL);
+        format.Object.SetWordWrapping(DWRITE_WORD_WRAPPING.DWRITE_WORD_WRAPPING_WRAP);
 
         // create layout
         using var layout = DWriteFactory.CreateTextLayout(format, text, text.Length, size.Width, size.Height);
