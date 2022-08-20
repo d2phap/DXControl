@@ -11,22 +11,22 @@ namespace Demo;
 
 public class DXCanvas : DXControl
 {
-    private IComObject<ID2D1Bitmap>? _d2dBitmap = null;
-    private D2D_RECT_F rectText = new(100f, 100f, new(400, 200));
+    private IComObject<ID2D1Bitmap>? _bitmapD2d = null;
+    private Rectangle rectText = new(100, 100, 0, 200);
 
     public WicBitmapSource? Image
     {
         set
         {
-            DXHelper.DisposeD2D1Bitmap(ref _d2dBitmap);
+            DXHelper.DisposeD2D1Bitmap(ref _bitmapD2d);
             GC.Collect();
 
             if (Device == null || value == null)
             {
-                _d2dBitmap = null;
+                _bitmapD2d = null;
                 return;
             }
-            
+
             // create D2DBitmap from WICBitmapSource
             var bitmapProps = new D2D1_BITMAP_PROPERTIES()
             {
@@ -40,13 +40,16 @@ public class DXCanvas : DXControl
             };
             var bitmapPropsPtr = bitmapProps.StructureToPtr();
 
+            value.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
             Device.CreateBitmapFromWicBitmap(value.ComObject.Object, bitmapPropsPtr,
                 out ID2D1Bitmap bmp)
                 .ThrowOnError();
 
-            _d2dBitmap = new ComObject<ID2D1Bitmap>(bmp);
+            _bitmapD2d = new ComObject<ID2D1Bitmap>(bmp);
         }
     }
+
+    public Bitmap? Bitmap { get; set; }
 
 
     public DXCanvas()
@@ -55,74 +58,68 @@ public class DXCanvas : DXControl
     }
 
 
-    protected override void OnDirect2DRender(DXGraphics g)
+    protected override void OnRender(IGraphics g)
     {
-        var p1 = new D2D_POINT_2F(0, 0);
-        var p2 = new D2D_POINT_2F(ClientSize.Width, ClientSize.Height);
+        var p1 = new Point(0, 0);
+        var p2 = new Point(ClientSize.Width, ClientSize.Height);
 
         // draw X
-        g.DrawLine(p1, p2, _D3DCOLORVALUE.Blue, 3.0f);
-        g.DrawLine(new(ClientSize.Width, 0), new(0, ClientSize.Height), _D3DCOLORVALUE.Red, 3.0f);
+        g.DrawLine(p1, p2, Color.Blue, 10.0f);
+        g.DrawLine(new(ClientSize.Width, 0), new(0, ClientSize.Height), Color.Red, 3.0f);
 
 
-        // draw image
-        if (_d2dBitmap != null)
+        // draw D2DBitmap image
+        if (UseHardwareAcceleration && _bitmapD2d != null)
         {
-            _d2dBitmap.Object.GetSize(out var size);
-            g.DrawBitmap(_d2dBitmap.Object,
-                new D2D_RECT_F(10f, 10f, size.width * 1, size.height * 1),
-                new D2D_RECT_F(0, 0, size.width, size.height));
+            _bitmapD2d.Object.GetSize(out var size);
+            g.DrawBitmap(_bitmapD2d.Object,
+                destRect: new RectangleF(50, 50, size.width * 5, size.height * 5),
+                srcRect: new RectangleF(0, 0, size.width, size.height),
+                interpolation: InterpolationMode.NearestNeighbor
+                );
+        }
+        // draw GDI+ image
+        else if (!UseHardwareAcceleration && Bitmap != null)
+        {
+            g.DrawBitmap(Bitmap,
+                destRect: new RectangleF(50, 50, Bitmap.Width * 5, Bitmap.Height * 5),
+                srcRect: new RectangleF(0, 0, Bitmap.Width, Bitmap.Height),
+                interpolation: InterpolationMode.NearestNeighbor
+                );
         }
 
+
         // draw rectangle border
-        g.DrawRectangle(new(10f, 10f, new(ClientSize.Width - 20, ClientSize.Height - 20)),
-            _D3DCOLORVALUE.GreenYellow, 5f);
+        g.DrawRectangle(10f, 10f, ClientSize.Width - 20, ClientSize.Height - 20, 0,
+            Color.GreenYellow, null, 5f);
 
 
         // draw and fill rounded rectangle
-        g.FillRoundedRectangle(new(ClientSize.Width / 1.5f, ClientSize.Height / 1.5f, new(300, 100)),
-            50f, 10f, _D3DCOLORVALUE.FromCOLORREF(_D3DCOLORVALUE.Cyan.Int32Value, 180));
-        g.DrawRoundedRectangle(new(ClientSize.Width / 1.5f, ClientSize.Height / 1.5f, new(300, 100)),
-            50f, 10f, _D3DCOLORVALUE.LightCyan, 3);
+        g.DrawRectangle(ClientSize.Width / 1.5f, ClientSize.Height / 1.5f, 300, 100,
+            20f, Color.LightCyan, Color.FromArgb(180, Color.Cyan), 3f);
 
 
         // draw and fill rectangle
-        g.FillRectangle(rectText,
-            _D3DCOLORVALUE.FromCOLORREF(_D3DCOLORVALUE.Yellow.Int32Value, 100));
-        g.DrawRectangle(rectText, _D3DCOLORVALUE.Green);
+        g.DrawRectangle(rectText, 0, Color.Green, Color.FromArgb(100, Color.Yellow));
 
         // draw text
-        g.DrawText($"{FPS} Dương Diệu Pháp 😛💋", Font.Name, Font.Size * 1.5f, rectText,
-            _D3DCOLORVALUE.Lavender, textDpi: DeviceDpi,
-            hAlign: DWRITE_TEXT_ALIGNMENT.DWRITE_TEXT_ALIGNMENT_TRAILING,
-            vAlign: DWRITE_PARAGRAPH_ALIGNMENT.DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
-            fontWeight: DWRITE_FONT_WEIGHT.DWRITE_FONT_WEIGHT_SEMI_BOLD);
+        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, 12, rectText,
+            Color.Lavender, DeviceDpi, StringAlignment.Center, isBold: true, isItalic: true);
 
 
         // draw and fill ellipse
-        g.FillEllipse(400, 400, 300, 200,
-            _D3DCOLORVALUE.FromCOLORREF(_D3DCOLORVALUE.Magenta.Int32Value, 120));
-        g.DrawEllipse(400, 400, 300, 200, _D3DCOLORVALUE.Purple, 5);
+        g.DrawEllipse(200, 200, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
+
+
+        var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
+        g.DrawText($"FPS: {FPS} - {engine}", Font.Name, 15, 0, 0, Color.Purple, DeviceDpi);
 
     }
-
-    
-
-    protected override void OnGdiPlusRender(Graphics g)
-    {
-        using var pen = new Pen(Color.Red, 5);
-        g.DrawRectangle(pen, new Rectangle(
-            (int)rectText.left, (int)rectText.top - 50,
-            (int)rectText.Width, (int)rectText.Height));
-
-        g.DrawString($"FPS: {FPS} - GDI+", Font, Brushes.Purple, new PointF(100, 100));
-    }
-
 
     
     protected override void OnFrame(FrameEventArgs e)
     {
         base.OnFrame(e);
-        rectText.left++;
+        rectText.Width++;
     }
 }

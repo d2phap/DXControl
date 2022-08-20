@@ -27,7 +27,8 @@ public class DXControl : Control
     private readonly IComObject<IDWriteFactory> _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
     private ID2D1HwndRenderTarget? _renderTarget;
     private ID2D1DeviceContext? _device;
-    private DXGraphics? _graphics;
+    private D2DGraphics? _graphicsD2d;
+    private GdipGraphics? _graphicsGdi;
 
 
     private bool _useHardwardAcceleration = true;
@@ -86,10 +87,10 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="OnDirect2DRender(DXGraphics)"/>.
+    /// Gets the <see cref='D2DGraphics'/> object used to draw in <see cref="Render"/>.
     /// </summary>
     [Browsable(false)]
-    public DXGraphics? D2Graphics => _graphics;
+    public D2DGraphics? D2Graphics => _graphicsD2d;
 
 
     /// <summary>
@@ -189,15 +190,9 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Occurs when the control is being rendered by Direct2D <see cref="DXGraphics"/>.
+    /// Occurs when the control is being rendered by <see cref="IGraphics"/>.
     /// </summary>
-    public event EventHandler<RenderByDirect2DEventArgs>? RenderByDirect2D;
-
-
-    /// <summary>
-    /// Occurs when the control is being rendered by GDI+ <see cref="Graphics"/>.
-    /// </summary>
-    public event EventHandler<RenderByGdiPlusEventArgs>? RenderByGdiPLus;
+    public event EventHandler<RenderEventArgs>? Render;
 
 
     /// <summary>
@@ -259,8 +254,8 @@ public class DXControl : Control
         _ticker.Stop(1000);
         _ticker.Tick -= Ticker_Tick;
 
-        _graphics?.Dispose();
-        _graphics = null;
+        _graphicsD2d?.Dispose();
+        _graphicsD2d = null;
 
         // '_device' must be disposed in DestroyHandle()
     }
@@ -359,9 +354,8 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// <b>Do use</b> <see cref="OnDirect2DRender(DXGraphics)"/> if you want to draw on the control.
+    /// <b>Do use</b> <see cref="OnRender(IGraphics)"/> if you want to draw on the control.
     /// </summary>
-    /// <param name="e"></param>
     protected override void OnPaint(PaintEventArgs e)
     {
         if (DesignMode)
@@ -382,18 +376,29 @@ public class DXControl : Control
         {
             DoubleBuffered = false;
 
-            _graphics ??= new DXGraphics(_device, _dWriteFactory);
+            _graphicsD2d ??= new D2DGraphics(_device, _dWriteFactory);
 
             _device.BeginDraw();
             _device.Clear(_D3DCOLORVALUE.FromColor(BackColor));
-            OnDirect2DRender(_graphics);
+            OnRender(_graphicsD2d);
             _device.EndDraw();
         }
+
         // use GDI+ graphics
         else
         {
             DoubleBuffered = true;
-            OnGdiPlusRender(e.Graphics);
+
+            if (_graphicsGdi == null)
+            {
+                _graphicsGdi = new GdipGraphics(e.Graphics);
+            }
+            else
+            {
+                _graphicsGdi.Graphics = e.Graphics;
+            }
+
+            OnRender(_graphicsGdi);
         }
 
 
@@ -428,29 +433,17 @@ public class DXControl : Control
     #region New / Virtual functions
 
     /// <summary>
-    /// Draws control by Direct2D <see cref="D2Graphics"/> object.
+    /// Triggers <see cref="Render"/> event to paint the control.
     /// </summary>
-    protected virtual void OnDirect2DRender(DXGraphics g)
+    protected virtual void OnRender(IGraphics g)
     {
         if (!IsReady) return;
-
-        RenderByDirect2D?.Invoke(this, new(g));
+        Render?.Invoke(this, new(g));
     }
 
 
     /// <summary>
-    /// Draws control by GDI+ <see cref="Graphics"/> object.
-    /// </summary>
-    protected virtual void OnGdiPlusRender(Graphics g)
-    {
-        if (!IsReady) return;
-
-        RenderByGdiPLus?.Invoke(this, new(g));
-    }
-
-
-    /// <summary>
-    /// Process animation logic when frame changes
+    /// Triggers <see cref="Frame"/> event to process animation logic when frame changes.
     /// </summary>
     protected virtual void OnFrame(FrameEventArgs e)
     {
@@ -461,7 +454,7 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Happens when control is ready.
+    /// Triggers <see cref="Loaded"/> event when the control is ready.
     /// </summary>
     protected virtual void OnLoaded()
     {
@@ -532,7 +525,7 @@ public class DXControl : Control
         _renderTarget.Resize(new((uint)ClientSize.Width, (uint)ClientSize.Height));
 
         _device = (ID2D1DeviceContext)_renderTarget;
-        _graphics = new DXGraphics(_device, _dWriteFactory);
+        _graphicsD2d = new D2DGraphics(_device, _dWriteFactory);
     }
 
 

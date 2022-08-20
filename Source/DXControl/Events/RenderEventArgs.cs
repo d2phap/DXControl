@@ -7,17 +7,17 @@ namespace D2Phap;
 
 
 /// <summary>
-/// Provides the data for <see cref="DXControl.RenderDX"/> event.
+/// Provides the data for <see cref="DXControl.Render"/> event.
 /// </summary>
-public class RenderDXEventArgs : EventArgs
+public class RenderEventArgs : EventArgs
 {
     /// <summary>
-    /// Gets the <see cref='DXGraphics'/> object used to draw.
+    /// Gets the <see cref='IGraphics'/> object used to draw.
     /// </summary>
-    public DXGraphics Graphics { get; init; }
+    public IGraphics Graphics { get; init; }
 
 
-    public RenderDXEventArgs(DXGraphics g)
+    public RenderEventArgs(IGraphics g)
     {
         Graphics = g;
     }
