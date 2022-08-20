@@ -1,6 +1,6 @@
 # D2Phap.DXControl
 
-- A WinForms hybrid control that supports Direct2D and GDI+ drawing thanks to [DirectN](https://github.com/smourier/DirectN) and [WicNet](https://github.com/smourier/WicNet).
+- A WinForms hybrid control that supports both Direct2D and GDI+ drawing thanks to [WicNet](https://github.com/smourier/WicNet).
 - This control is used in [ImageGlass](https://github.com/d2phap/ImageGlass) software since version 9.0.
 
 ![Nuget](https://img.shields.io/nuget/dt/D2Phap.DXControl?color=%2300a8d6&logo=nuget)
@@ -30,10 +30,11 @@ Install-Package D2Phap.DXControl
 
 
 ## Example
-Draw 2 rectangles by Direct2D and GDI+ graphics, then animate it to the right side.
 
-<img src="https://user-images.githubusercontent.com/3154213/181906424-27418cfd-5f41-4380-8ae9-0ea577c91b16.png" width="500" />
 
+<img src="https://user-images.githubusercontent.com/3154213/185740243-6a3cb1b6-13e6-4888-8c57-ce8ac9998c6e.png" width="500" />
+
+Draws a rectangle, then moves it to the right side.
 
 ```cs
 using D2Phap;
@@ -41,7 +42,7 @@ using D2Phap;
 // create a WinForms custom control that extends from DXControl
 public class DXCanvas : DXControl
 {
-    private D2D_RECT_F animatableRectangle = new(100f, 100f, new(400, 200));
+    private RectangleF animatableRectangle = new(100, 100, 400, 200);
 
     public DXCanvas()
     {
@@ -51,21 +52,11 @@ public class DXCanvas : DXControl
         UseHardwareAcceleration = true;
     }
 
-    // use Direct2D graphics
-    protected override void OnDirect2DRender(DXGraphics g)
+    protected override void OnRender(IGraphics g)
     {
         // draw a yellow rectangle with green border
-        g.FillRectangle(rectText, _D3DCOLORVALUE.FromCOLORREF(_D3DCOLORVALUE.Yellow.Int32Value, 100));
-        g.DrawRectangle(rectText, _D3DCOLORVALUE.Green);
-    }
-
-
-    // Use GDI+ graphics
-    protected override void OnGdiPlusRender(Graphics g)
-    {
-        // draw a yellow rectangle with green border
-        using var pen = new Pen(Color.Red, 5);
-        g.DrawRectangle(pen, new Rectangle((int)rectText.left, (int)rectText.top - 50, (int)rectText.Width, (int)rectText.Height));
+        g.FillRectangle(rectText, Color.FromArgb(100, Yellow));
+        g.DrawRectangle(rectText, Color.Green);
     }
 
 
