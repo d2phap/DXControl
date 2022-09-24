@@ -1,7 +1,6 @@
-﻿using System;
+﻿
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace DirectN
 {
@@ -14,6 +13,7 @@ namespace DirectN
         private int _tickDivider = 1;
 
         public event EventHandler<VerticalBlankTickerEventArgs>? Tick;
+        public event EventHandler<VerticalBlankTickerErrorEventArgs>? WaitError;
 
         public string DeviceName { get; private set; } = string.Empty;
         public bool IsRunning { get; private set; }
@@ -121,8 +121,18 @@ namespace DirectN
                 }
                 else
                 {
-                    IsRunning = false;
-                    throw new Win32Exception(status);
+                    var e = new VerticalBlankTickerErrorEventArgs(_ticks, status);
+                    WaitError?.Invoke(null, e);
+                    if (!e.Handled)
+                    {
+                        IsRunning = false;
+                        throw new Win32Exception(status);
+                    }
+                    else
+                    {
+                        if (e.Stop)
+                            break;
+                    }
                 }
 
                 if (_stop)
