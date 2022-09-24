@@ -101,7 +101,7 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Gets, sets the DPI for drawing when using <see cref="DXGraphics"/>.
+    /// Gets, sets the DPI for drawing when using <see cref="D2DGraphics"/>.
     /// </summary>
     [Browsable(false)]
     public float BaseDpi
@@ -232,6 +232,7 @@ public class DXControl : Control
 
         // animation initiation
         _ticker.Tick += Ticker_Tick;
+        _ticker.WaitError += Ticker_WaitError;
         _ticker.Start();
     }
 
@@ -253,6 +254,7 @@ public class DXControl : Control
 
         _ticker.Stop(1000);
         _ticker.Tick -= Ticker_Tick;
+        _ticker.WaitError -= Ticker_WaitError;
 
         _graphicsD2d?.Dispose();
         _graphicsD2d = null;
@@ -483,6 +485,20 @@ public class DXControl : Control
         {
             OnFrame(new(e.Ticks));
             Invalidate();
+        }
+    }
+
+    private void Ticker_WaitError(object? sender, VerticalBlankTickerErrorEventArgs e)
+    {
+        const uint UNKNOWN_ERROR = 0xc01e0006;
+
+        // happens when the screen is off, we handle this error and put the thread
+        // into sleep so that it will auto-recover when the screen is on again
+        // https://github.com/smourier/DirectN/issues/29
+        if (e.Error == unchecked((int)UNKNOWN_ERROR))
+        {
+            Thread.Sleep(1000);
+            e.Handled = true;
         }
     }
 
