@@ -190,7 +190,113 @@ public class GdipGraphics : IGraphics
         Graphics.DrawPath(borderPen, path);
     }
 
-    #endregion // Draw/Fill Rectangle
+    #endregion // Draw / Fill Rectangle
+
+
+    #region Draw / Fill Geometry
+
+    public GeometryObject GetCombinedRectanglesGeometry(RectangleF rect1, RectangleF rect2,
+        float rect1Radius, float rect2Radius, CombineMode combineMode)
+    {
+        var path1 = GetRoundRectanglePath(rect1, rect1Radius);
+        var path2 = GetRoundRectanglePath(rect2, rect2Radius);
+        var region = new Region(path1);
+
+        if (combineMode == CombineMode.Union)
+        {
+            region.Union(path2);
+        }
+        else if (combineMode == CombineMode.Intesect)
+        {
+            region.Intersect(path2);
+        }
+        else if (combineMode == CombineMode.Xor)
+        {
+            region.Xor(path2);
+        }
+        else if (combineMode == CombineMode.Exclude)
+        {
+            region.Exclude(path2);
+        }
+
+        return new GeometryObject()
+        {
+            GdiRegion = region,
+            GdiPath = path1,
+        };
+    }
+
+
+    public GeometryObject GetCombinedEllipsesGeometry(RectangleF rect1, RectangleF rect2, CombineMode combineMode)
+    {
+        // create ellipse paths
+        var path1 = new GraphicsPath();
+        path1.AddEllipse(rect1);
+
+        var path2 = new GraphicsPath();
+        path2.AddEllipse(rect2);
+
+
+        // combine 2 paths
+        var region = new Region(path1);
+
+        if (combineMode == CombineMode.Union)
+        {
+            region.Union(path2);
+        }
+        else if (combineMode == CombineMode.Intesect)
+        {
+            region.Intersect(path2);
+        }
+        else if (combineMode == CombineMode.Xor)
+        {
+            region.Xor(path2);
+        }
+        else if (combineMode == CombineMode.Exclude)
+        {
+            region.Exclude(path2);
+        }
+
+        return new GeometryObject()
+        {
+            GdiRegion = region,
+            GdiPath = path1,
+        };
+    }
+
+
+    /// <summary>
+    /// Draw geometry.
+    /// <para>
+    /// <c>**Note:</c>
+    /// Currently GDI+ only draws correctly for 2 mode: <see cref="CombineMode.Intesect"/> and <see cref="CombineMode.Exclude"/>
+    /// </para>
+    /// </summary>
+    public void DrawGeometry(GeometryObject geoObj, Color borderColor, Color? fillColor = null, float strokeWidth = 1)
+    {
+        if (geoObj.GdiRegion is not Region region) return;
+        if (geoObj.GdiPath is not GraphicsPath path) return;
+
+        Graphics.Clip = region;
+
+        // fill background
+        if (fillColor != null)
+        {
+            using var bgBrush = new SolidBrush(fillColor.Value);
+            Graphics.FillPath(bgBrush, path);
+        }
+
+        // draw border
+        if (borderColor != Color.Transparent)
+        {
+            using var borderPen = new Pen(borderColor, strokeWidth);
+            Graphics.DrawPath(borderPen, path);
+        }
+
+        Graphics.ResetClip();
+    }
+
+    #endregion // Draw / Fill Geometry
 
 
     #region Draw / Measure text
@@ -273,6 +379,7 @@ public class GdipGraphics : IGraphics
     #endregion // Others
 
 
+    #region Public static functions
 
     /// <summary>
     /// Gets rounded rectangle graphic path
@@ -362,4 +469,8 @@ public class GdipGraphics : IGraphics
             _ => System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor
         };
     }
+
+    #endregion // Public static functions
+
+
 }

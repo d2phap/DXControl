@@ -193,7 +193,11 @@ public interface IGraphics : IDisposable
 
 
     /// <summary>
-    /// Draws geometry.
+    /// Draw geometry.
+    /// <para>
+    /// <c>**Note:</c>
+    /// Currently GDI+ only draws correctly for 2 mode: <see cref="CombineMode.Intesect"/> and <see cref="CombineMode.Exclude"/>
+    /// </para>
     /// </summary>
     void DrawGeometry(GeometryObject geometryObj, Color borderColor, Color? fillColor = null, float strokeWidth = 1);
 
