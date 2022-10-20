@@ -4,6 +4,7 @@ Copyright (C) 2022 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
+using System.Drawing.Drawing2D;
 
 namespace D2Phap;
 
@@ -16,6 +17,73 @@ public enum InterpolationMode
     SampleLinear = 3,
     Antisotropic = 4,
     HighQualityBicubic = 5,
+}
+
+public enum CombineMode
+{
+    Union = 0,
+    Intesect = 1,
+    Xor = 2,
+    Exclude = 3,
+}
+
+
+public class GeometryObject : IDisposable
+{
+    /// <summary>
+    /// Contains an <see cref="IComObject"/> of type <see cref="ID2D1Geometry"/> for Direct2D drawing.
+    /// </summary>
+    public IComObject<ID2D1Geometry>? D2DGeometry { get; set; } = null;
+
+
+    /// <summary>
+    /// Contains <see cref="Region"/> object for GDI+ clipping.
+    /// </summary>
+    public Region? GdiRegion { get; set; } = null;
+
+
+    /// <summary>
+    /// Contains <see cref="GraphicsPath"/> object for GDI+ drawing.
+    /// </summary>
+    public GraphicsPath? GdiPath { get; set; } = null;
+
+
+
+    #region IDisposable Disposing
+
+    public bool IsDisposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (IsDisposed)
+            return;
+
+        if (disposing)
+        {
+            // Free any other managed objects here.
+            D2DGeometry?.Dispose();
+            GdiRegion?.Dispose();
+            GdiPath?.Dispose();
+        }
+
+        // Free any unmanaged objects here.
+        IsDisposed = true;
+    }
+
+    public virtual void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~GeometryObject()
+    {
+        Dispose(false);
+    }
+
+    #endregion
+
+
 }
 
 
@@ -43,7 +111,6 @@ public interface IGraphics : IDisposable
     /// <param name="srcRect"></param>
     /// <param name="interpolation"></param>
     /// <param name="opacity"></param>
-    /// <param name="dpi"></param>
     void DrawBitmap(object? bitmap,
         RectangleF? destRect = null,
         RectangleF? srcRect = null,
@@ -107,6 +174,31 @@ public interface IGraphics : IDisposable
     public void DrawEllipse(RectangleF rect, Color borderColor, Color? fillColor, float strokeWidth = 1);
 
     #endregion // Draw/Fill ellipse
+
+
+
+    #region Draw / Fill Geometry
+
+    /// <summary>
+    /// Get geometry from a combined 2 rectangles.
+    /// </summary>
+    GeometryObject GetCombinedRectanglesGeometry(RectangleF rect1, RectangleF rect2,
+        float rect1Radius, float rect2Radius, CombineMode combineMode);
+
+
+    /// <summary>
+    /// Get geometry from a combined 2 ellipses.
+    /// </summary>
+    GeometryObject GetCombinedEllipsesGeometry(RectangleF rect1, RectangleF rect2, CombineMode combineMode);
+
+
+    /// <summary>
+    /// Draws geometry.
+    /// </summary>
+    void DrawGeometry(GeometryObject geometryObj, Color borderColor, Color? fillColor = null, float strokeWidth = 1);
+
+    #endregion // Draw / Fill Geometry
+
 
 
     #region Draw / Measure text
