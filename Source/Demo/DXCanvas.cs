@@ -55,6 +55,7 @@ public class DXCanvas : DXControl
     public DXCanvas()
     {
         CheckFPS = true;
+        //EnableAnimation = false;
     }
 
 
@@ -109,6 +110,15 @@ public class DXCanvas : DXControl
 
         // draw and fill ellipse
         g.DrawEllipse(200, 200, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
+
+
+        using var geo = g.GetCombinedRectanglesGeometry(new RectangleF(200, 300, 300, 300),
+            new Rectangle(250, 250, 300, 100), 0, 0, CombineMode.Intesect);
+        g.DrawGeometry(geo, Color.Transparent, Color.Yellow, 2);
+
+
+        using var geo2 = g.GetCombinedEllipsesGeometry(new Rectangle(450, 450, 300, 100), new RectangleF(400, 400, 300, 300), CombineMode.Exclude);
+        g.DrawGeometry(geo2, Color.Transparent, Color.Green, 2f);
 
 
         var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
