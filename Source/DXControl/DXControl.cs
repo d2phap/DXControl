@@ -378,7 +378,7 @@ public class DXControl : Control
         {
             DoubleBuffered = false;
 
-            _graphicsD2d ??= new D2DGraphics(_device, _dWriteFactory);
+            _graphicsD2d ??= new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
 
             _device.BeginDraw();
             _device.Clear(_D3DCOLORVALUE.FromColor(BackColor));
@@ -541,7 +541,7 @@ public class DXControl : Control
         _renderTarget.Resize(new((uint)ClientSize.Width, (uint)ClientSize.Height));
 
         _device = (ID2D1DeviceContext)_renderTarget;
-        _graphicsD2d = new D2DGraphics(_device, _dWriteFactory);
+        _graphicsD2d = new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
     }
 
 

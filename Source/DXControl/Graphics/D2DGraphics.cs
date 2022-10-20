@@ -4,6 +4,7 @@ Copyright (C) 2022 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace D2Phap;
@@ -87,6 +88,12 @@ public class D2DGraphics : IGraphics
 
 
     /// <summary>
+    /// Gets the <see cref="ID2D1Factory"/> object wrapped into the <see cref="IComObject{T}"/> for drawing.
+    /// </summary>
+    public IComObject<ID2D1Factory> D2DFactory { get; init; }
+
+
+    /// <summary>
     /// Gets the <see cref="IDWriteFactory"/> object wrapped into the <see cref="IComObject{T}"/> for drawing text.
     /// </summary>
     public IComObject<IDWriteFactory> DWriteFactory { get; init; }
@@ -99,11 +106,16 @@ public class D2DGraphics : IGraphics
     /// Initialize new instance of <see cref="D2DGraphics"/>.
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
-    public D2DGraphics(ID2D1DeviceContext? dc, IComObject<IDWriteFactory>? wf)
+    public D2DGraphics(ID2D1DeviceContext? dc, IComObject<ID2D1Factory>? d2dF, IComObject<IDWriteFactory>? wf)
     {
         if (dc == null)
         {
             throw new ArgumentNullException(nameof(dc), "ID2D1DeviceContext is null.");
+        }
+
+        if (d2dF == null)
+        {
+            throw new ArgumentNullException(nameof(d2dF), "IComObject<ID2D1Factory> is null.");
         }
 
         if (wf == null)
@@ -112,6 +124,7 @@ public class D2DGraphics : IGraphics
         }
 
         DeviceContext = dc;
+        D2DFactory = d2dF;
         DWriteFactory = wf;
         UseAntialias = true;
     }
@@ -288,6 +301,121 @@ public class D2DGraphics : IGraphics
     }
 
     #endregion // Draw/Fill Rectangle
+
+
+    #region Draw / Fill Geometry
+
+    public GeometryObject GetCombinedRectanglesGeometry(RectangleF rect1, RectangleF rect2,
+        float rect1Radius, float rect2Radius, CombineMode combineMode)
+    {
+        // create rounded rectangle 1
+        var roundedRect1 = new D2D1_ROUNDED_RECT()
+        {
+            rect = new D2D_RECT_F(rect1.Left, rect1.Top, rect1.Right, rect1.Bottom),
+            radiusX = rect1Radius,
+            radiusY = rect1Radius,
+        };
+
+        // create rounded rectangle 2
+        var roundedRect2 = new D2D1_ROUNDED_RECT()
+        {
+            rect = new D2D_RECT_F(rect2.Left, rect2.Top, rect2.Right, rect2.Bottom),
+            radiusX = rect2Radius,
+            radiusY = rect2Radius,
+        };
+
+
+        // create geometries
+        var shape1Geo = D2DFactory.CreateRoundedRectangleGeometry(roundedRect1);
+        var shape22Geo = D2DFactory.CreateRoundedRectangleGeometry(roundedRect2);
+
+        // create path geometry to get the combined shape
+        var pathGeo = D2DFactory.CreatePathGeometry();
+        pathGeo.Object.Open(out var pathGeoSink).ThrowOnError();
+
+
+        // combine 2 geometry shapes
+        shape1Geo.Object.CombineWithGeometry(shape22Geo.Object, (D2D1_COMBINE_MODE)combineMode, IntPtr.Zero, 0, pathGeoSink).ThrowOnError();
+
+        pathGeoSink.Close();
+        Marshal.ReleaseComObject(pathGeoSink);
+        shape1Geo.Dispose();
+        shape22Geo.Dispose();
+
+        return new GeometryObject() { D2DGeometry = pathGeo };
+    }
+
+
+    public GeometryObject GetCombinedEllipsesGeometry(RectangleF rect1, RectangleF rect2, CombineMode combineMode)
+    {
+        // create ellipse 1
+        var ellipse1 = new D2D1_ELLIPSE(rect1.X + rect1.Width / 2, rect1.Y + rect1.Height / 2, rect1.Width / 2, rect1.Height / 2);
+
+        // create ellipse 2
+        var ellipse2 = new D2D1_ELLIPSE(rect2.X + rect2.Width / 2, rect2.Y + rect2.Height / 2, rect2.Width / 2, rect2.Height / 2);
+
+
+        // create geometries
+        var shape1Geo = D2DFactory.CreateEllipseGeometry(ellipse1);
+        var shape2Geo = D2DFactory.CreateEllipseGeometry(ellipse2);
+
+        // create path geometry to get the combined shape
+        var pathGeo = D2DFactory.CreatePathGeometry();
+        pathGeo.Object.Open(out var pathGeoSink).ThrowOnError();
+
+
+        // combine 2 geometry shapes
+        shape1Geo.Object.CombineWithGeometry(shape2Geo.Object, (D2D1_COMBINE_MODE)combineMode, IntPtr.Zero, 0, pathGeoSink).ThrowOnError();
+
+        pathGeoSink.Close();
+        Marshal.ReleaseComObject(pathGeoSink);
+        shape1Geo.Dispose();
+        shape2Geo.Dispose();
+
+
+        return new GeometryObject() { D2DGeometry = pathGeo };
+    }
+
+
+    public void DrawGeometry(GeometryObject geoObj, Color borderColor, Color? fillColor = null, float strokeWidth = 1f)
+    {
+        if (geoObj.D2DGeometry is not IComObject<ID2D1Geometry> geometry) return;
+
+        // draw background color -----------------------------------
+        if (fillColor != null)
+        {
+            var bgColor = DXHelper.FromColor(fillColor.Value);
+            var bgBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
+            {
+                opacity = 1f,
+            }.StructureToPtr();
+            DeviceContext.CreateSolidColorBrush(bgColor, bgBrushStylePtr, out var bgBrush);
+
+            // fill the combined geometry
+            DeviceContext.FillGeometry(geometry.Object, bgBrush);
+
+            Marshal.FreeHGlobal(bgBrushStylePtr);
+        }
+
+
+        // draw border color ----------------------------------------
+        if (borderColor != Color.Transparent)
+        {
+            var bdColor = DXHelper.FromColor(borderColor);
+            var borderBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
+            {
+                opacity = 1f,
+            }.StructureToPtr();
+            DeviceContext.CreateSolidColorBrush(bdColor, borderBrushStylePtr, out var borderBrush);
+
+            // draw the combined geometry
+            DeviceContext.DrawGeometry(geometry.Object, borderBrush, strokeWidth);
+
+            Marshal.FreeHGlobal(borderBrushStylePtr);
+        }
+    }
+
+    #endregion // Draw / Fill Geometry
 
 
     #region Draw / Measure text
