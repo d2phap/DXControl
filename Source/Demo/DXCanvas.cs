@@ -74,7 +74,7 @@ public class DXCanvas : DXControl
         {
             _bitmapD2d.Object.GetSize(out var size);
             g.DrawBitmap(_bitmapD2d.Object,
-                destRect: new RectangleF(50, 50, size.width * 5, size.height * 5),
+                destRect: new RectangleF(150, 150, size.width * 5, size.height * 5),
                 srcRect: new RectangleF(0, 0, size.width, size.height),
                 interpolation: InterpolationMode.NearestNeighbor
                 );
@@ -83,7 +83,7 @@ public class DXCanvas : DXControl
         else if (!UseHardwareAcceleration && Bitmap != null)
         {
             g.DrawBitmap(Bitmap,
-                destRect: new RectangleF(50, 50, Bitmap.Width * 5, Bitmap.Height * 5),
+                destRect: new RectangleF(150, 150, Bitmap.Width * 5, Bitmap.Height * 5),
                 srcRect: new RectangleF(0, 0, Bitmap.Width, Bitmap.Height),
                 interpolation: InterpolationMode.NearestNeighbor
                 );
@@ -104,7 +104,7 @@ public class DXCanvas : DXControl
         g.DrawRectangle(rectText, 0, Color.Green, Color.FromArgb(100, Color.Yellow));
 
         // draw text
-        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, 12, rectText,
+        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, 9, rectText,
             Color.Lavender, DeviceDpi, StringAlignment.Center, isBold: true, isItalic: true);
 
 
@@ -122,7 +122,7 @@ public class DXCanvas : DXControl
 
 
         var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
-        g.DrawText($"FPS: {FPS} - {engine}", Font.Name, 15, 0, 0, Color.Purple, DeviceDpi);
+        g.DrawText($"FPS: {FPS} - {engine}", Font.Name, 18, 0, 0, Color.Purple, DeviceDpi);
 
     }
 

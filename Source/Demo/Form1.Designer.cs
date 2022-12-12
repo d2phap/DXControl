@@ -42,10 +42,11 @@
             this.canvas.BaseDpi = 96F;
             this.canvas.Bitmap = null;
             this.canvas.CheckFPS = true;
-            this.canvas.Location = new System.Drawing.Point(10, 46);
+            this.canvas.Location = new System.Drawing.Point(19, 82);
+            this.canvas.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
             this.canvas.Name = "canvas";
             this.canvas.RequestUpdateFrame = true;
-            this.canvas.Size = new System.Drawing.Size(1057, 661);
+            this.canvas.Size = new System.Drawing.Size(1997, 1178);
             this.canvas.TabIndex = 0;
             this.canvas.Text = "dxCanvas1";
             this.canvas.DragDrop += new System.Windows.Forms.DragEventHandler(this.canvas_DragDrop);
@@ -53,13 +54,13 @@
             // 
             // chkD2D
             // 
-            this.chkD2D.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkD2D.AutoSize = true;
             this.chkD2D.Checked = true;
             this.chkD2D.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkD2D.Location = new System.Drawing.Point(867, 13);
+            this.chkD2D.Location = new System.Drawing.Point(19, 23);
+            this.chkD2D.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
             this.chkD2D.Name = "chkD2D";
-            this.chkD2D.Size = new System.Drawing.Size(200, 27);
+            this.chkD2D.Size = new System.Drawing.Size(349, 45);
             this.chkD2D.TabIndex = 1;
             this.chkD2D.Text = "Use Direct2D graphics";
             this.chkD2D.UseVisualStyleBackColor = true;
@@ -67,13 +68,14 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 23F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(17F, 41F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1077, 717);
+            this.ClientSize = new System.Drawing.Size(2034, 1278);
             this.Controls.Add(this.chkD2D);
             this.Controls.Add(this.canvas);
+            this.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
             this.Name = "Form1";
-            this.Padding = new System.Windows.Forms.Padding(10);
+            this.Padding = new System.Windows.Forms.Padding(19, 18, 19, 18);
             this.Text = "D2Phap.DXControl demo";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);

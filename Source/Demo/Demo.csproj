@@ -22,4 +22,10 @@
     <ProjectReference Include="..\DXControl\D2Phap.DXControl.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="photo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
