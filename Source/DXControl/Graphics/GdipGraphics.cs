@@ -315,7 +315,7 @@ public class GdipGraphics : IGraphics
         if (textDpi != null)
         {
             var dpiFactor = textDpi.Value / 96.0f;
-            fontSize *= dpiFactor * dpiFactor;
+            fontSize = (fontSize + dpiFactor) * dpiFactor;
         }
 
         // Create a StringFormat object with the each line of text, and the block
@@ -348,7 +348,7 @@ public class GdipGraphics : IGraphics
     public SizeF MeasureText(string text, string fontFamilyName, float fontSize, SizeF size, float textDpi = 96, bool isBold = false, bool isItalic = false)
     {
         var dpiFactor = textDpi / 96.0f;
-        fontSize *= dpiFactor * dpiFactor;
+        fontSize = (fontSize + dpiFactor) * dpiFactor;
 
         var style = FontStyle.Regular;
         if (isBold) style |= FontStyle.Bold;

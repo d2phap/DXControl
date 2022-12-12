@@ -440,7 +440,7 @@ public class D2DGraphics : IGraphics
             var dpiFactor = textDpi.Value / 96.0f;
             DeviceContext.SetDpi(textDpi.Value, textDpi.Value);
 
-            fontSize *= dpiFactor;
+            fontSize += dpiFactor;
 
             region.left /= dpiFactor;
             region.top /= dpiFactor;
@@ -510,7 +510,7 @@ public class D2DGraphics : IGraphics
     {
         // fix DPI
         var dpiScale = textDpi / 96.0f;
-        fontSize *= dpiScale * dpiScale;
+        fontSize += dpiScale;
 
         // format text
         var fontWeight = isBold
