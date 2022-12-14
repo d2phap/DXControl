@@ -27,6 +27,12 @@ public partial class Form1 : Form
         canvas.Bitmap = new Bitmap(Environment.GetCommandLineArgs()[1], true);
     }
 
+
+    protected override void OnDpiChanged(DpiChangedEventArgs e)
+    {
+        base.OnDpiChanged(e);
+    }
+
     public static WicBitmapSource? FromBitmapSource(BitmapSource bmp)
     {
         if (bmp == null)
