@@ -1,11 +1,12 @@
 ﻿/*
 MIT License
-Copyright (C) 2022 DUONG DIEU PHAP
+Copyright (C) 2022 - 2023 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using D2Phap;
 using DirectN;
 using WicNet;
+using InterpolationMode = D2Phap.InterpolationMode;
 
 namespace Demo;
 
@@ -112,13 +113,16 @@ public class DXCanvas : DXControl
         g.DrawEllipse(200, 200, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
 
 
-        using var geo = g.GetCombinedRectanglesGeometry(new RectangleF(200, 300, 300, 300),
-            new Rectangle(250, 250, 300, 100), 0, 0, CombineMode.Intesect);
-        g.DrawGeometry(geo, Color.Transparent, Color.Yellow, 2);
+        if (UseHardwareAcceleration && g is D2DGraphics dg)
+        {
+            using var geo = dg.GetCombinedRectanglesGeometry(new RectangleF(200, 300, 300, 300),
+                new Rectangle(250, 250, 300, 100), 0, 0, D2D1_COMBINE_MODE.D2D1_COMBINE_MODE_INTERSECT);
+            dg.DrawGeometry(geo, Color.Transparent, Color.Yellow, 2);
 
 
-        using var geo2 = g.GetCombinedEllipsesGeometry(new Rectangle(450, 450, 300, 100), new RectangleF(400, 400, 300, 300), CombineMode.Exclude);
-        g.DrawGeometry(geo2, Color.Transparent, Color.Green, 2f);
+            using var geo2 = dg.GetCombinedEllipsesGeometry(new Rectangle(450, 450, 300, 100), new RectangleF(400, 400, 300, 300), D2D1_COMBINE_MODE.D2D1_COMBINE_MODE_EXCLUDE);
+            dg.DrawGeometry(geo2, Color.Transparent, Color.Green, 2f);
+        }
 
 
         var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
