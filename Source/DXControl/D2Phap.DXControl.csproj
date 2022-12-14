@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFrameworks>net6.0-windows;net7.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,7 +12,7 @@
     <Product>D2Phap.$(AssemblyName)</Product>
     <Description>A WinForms hybrid control that supports both Direct2D and GDI+ drawing thanks to WicNet. This control is being used in https://github.com/d2phap/ImageGlass since version 9.0.
     </Description>
-    <Copyright>Copyright (C) 2022 Duong Dieu Phap. All rights reserved.</Copyright>
+    <Copyright>Copyright (C) 2022 - 2023 Duong Dieu Phap. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/d2phap/DXControl</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/d2phap/DXControl</RepositoryUrl>
@@ -21,7 +21,7 @@
     <IncludeSymbols>True</IncludeSymbols>
     <PackageReleaseNotes>See release notes here: https://github.com/d2phap/DXControl/releases</PackageReleaseNotes>
     <Authors>Duong Dieu Phap</Authors>
-    <VersionPrefix>2.2.0</VersionPrefix>
+    <VersionPrefix>2.3.0</VersionPrefix>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
       <PublishRepositoryUrl>true</PublishRepositoryUrl>
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
