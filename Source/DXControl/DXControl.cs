@@ -15,30 +15,30 @@ namespace D2Phap;
 /// </summary>
 public class DXControl : Control
 {
-    // Private properties
-    #region Private properties
+    // Internal properties
+    #region Internal properties
 
-    private bool _isControlLoaded = false;
-    private float _dpi = 96.0f;
-    private readonly VerticalBlankTicker _ticker = new();
+    protected bool _isControlLoaded = false;
+    protected float _dpi = 96.0f;
+    protected readonly VerticalBlankTicker _ticker = new();
 
     // Protected properties
-    private readonly IComObject<ID2D1Factory> _d2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
-    private readonly IComObject<IDWriteFactory> _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
-    private ID2D1HwndRenderTarget? _renderTarget;
-    private ID2D1DeviceContext? _device;
-    private D2DGraphics? _graphicsD2d;
-    private GdipGraphics? _graphicsGdi;
+    protected readonly IComObject<ID2D1Factory> _d2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+    protected readonly IComObject<IDWriteFactory> _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+    protected ID2D1HwndRenderTarget? _renderTarget;
+    protected ID2D1DeviceContext? _device;
+    protected D2DGraphics? _graphicsD2d;
+    protected GdipGraphics? _graphicsGdi;
 
 
-    private bool _useHardwardAcceleration = true;
-    private bool _firstPaintBackground = true;
-    private bool _enableAnimation = true;
-    private int _currentFps = 0;
-    private int _lastFps = 0;
-    private DateTime _lastFpsUpdate = DateTime.UtcNow;
+    protected bool _useHardwardAcceleration = true;
+    protected bool _firstPaintBackground = true;
+    protected bool _enableAnimation = true;
+    protected int _currentFps = 0;
+    protected int _lastFps = 0;
+    protected DateTime _lastFpsUpdate = DateTime.UtcNow;
 
-    #endregion // Private properties
+    #endregion // Internal properties
 
 
     // Public properties

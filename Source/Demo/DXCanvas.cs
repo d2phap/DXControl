@@ -13,7 +13,7 @@ namespace Demo;
 public class DXCanvas : DXControl
 {
     private IComObject<ID2D1Bitmap>? _bitmapD2d = null;
-    private Rectangle rectText = new(100, 100, 0, 200);
+    private Rectangle rectText = new(40, 40, 300, 200);
 
     public WicBitmapSource? Image
     {
@@ -100,19 +100,11 @@ public class DXCanvas : DXControl
         g.DrawRectangle(ClientSize.Width / 1.5f, ClientSize.Height / 1.5f, 300, 100,
             20f, Color.LightCyan, Color.FromArgb(180, Color.Cyan), 3f);
 
-
-        // draw and fill rectangle
-        g.DrawRectangle(rectText, 0, Color.Green, Color.FromArgb(100, Color.Yellow));
-
-        // draw text
-        g.DrawText($"Dương Diệu Pháp 😛💋", Font.Name, 9, rectText,
-            Color.Lavender, DeviceDpi, StringAlignment.Center, isBold: true, isItalic: true);
-
-
         // draw and fill ellipse
         g.DrawEllipse(200, 200, 300, 200, Color.FromArgb(120, Color.Magenta), Color.Purple, 5);
 
 
+        // draw geometry D2D only
         if (UseHardwareAcceleration && g is D2DGraphics dg)
         {
             using var geo = dg.GetCombinedRectanglesGeometry(new RectangleF(200, 300, 300, 300),
@@ -125,6 +117,19 @@ public class DXCanvas : DXControl
         }
 
 
+        // draw and fill rectangle
+        g.DrawRectangle(rectText, 0, Color.Green, Color.FromArgb(100, Color.Yellow));
+
+
+        // draw text
+        var text = "Dương\r\nDiệu\r\nPháp\r\n😵🪺🐷😶‍🌫️🤯🫶🏿";
+        var textSize = g.MeasureText(text, Font.Name, 12, textDpi: DeviceDpi, isBold: true, isItalic: true);
+        g.DrawText($"{text}\r\n{textSize}", Font.Name, 12, rectText,
+            Color.Red, DeviceDpi, StringAlignment.Near, isBold: true, isItalic: true);
+        g.DrawRectangle(new RectangleF(rectText.Location, textSize), 0, Color.Red);
+
+
+        // draw FPD info
         var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
         g.DrawText($"FPS: {FPS} - {engine}", Font.Name, 18, 0, 0, Color.Purple, DeviceDpi);
 
@@ -134,6 +139,6 @@ public class DXCanvas : DXControl
     protected override void OnFrame(FrameEventArgs e)
     {
         base.OnFrame(e);
-        rectText.Width++;
+        //rectText.Width++;
     }
 }
