@@ -21,7 +21,7 @@
     <IncludeSymbols>True</IncludeSymbols>
     <PackageReleaseNotes>See release notes here: https://github.com/d2phap/DXControl/releases</PackageReleaseNotes>
     <Authors>Duong Dieu Phap</Authors>
-    <VersionPrefix>2.3.0</VersionPrefix>
+    <VersionPrefix>2.3.1</VersionPrefix>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
       <PublishRepositoryUrl>true</PublishRepositoryUrl>
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
