@@ -241,9 +241,11 @@ public class GdipGraphics : IGraphics
 
     public SizeF MeasureText(string text, string fontFamilyName, float fontSize, SizeF size, float textDpi = 96, bool isBold = false, bool isItalic = false)
     {
-        var dpiFactor = textDpi / 96.0f;
-        fontSize = (fontSize + dpiFactor) * dpiFactor;
+        // fix DPI
+        var dpiScale = textDpi / 96.0f;
+        fontSize = (fontSize + dpiScale) * dpiScale;
 
+        // format text
         var style = FontStyle.Regular;
         if (isBold) style |= FontStyle.Bold;
         if (isItalic) style |= FontStyle.Italic;

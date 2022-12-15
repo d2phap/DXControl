@@ -394,7 +394,7 @@ public class D2DGraphics : IGraphics
     {
         // fix DPI
         var dpiScale = textDpi / 96.0f;
-        fontSize += fontSize * dpiScale;
+        fontSize = (fontSize + dpiScale) * dpiScale;
 
         // format text
         var fontWeight = isBold
