@@ -1,6 +1,7 @@
 ﻿
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using WicNet.Utilities;
 
 namespace DirectN
 {

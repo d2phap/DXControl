@@ -6,6 +6,7 @@ Project & license info: https://github.com/d2phap/DXControl
 using D2Phap;
 using DirectN;
 using WicNet;
+using WicNet.Utilities;
 using InterpolationMode = D2Phap.InterpolationMode;
 
 namespace Demo;
