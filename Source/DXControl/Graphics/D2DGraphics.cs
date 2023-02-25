@@ -28,7 +28,7 @@ public class D2DGraphics : IGraphics
             // Free any other managed objects here.
 
             DWriteFactory.Dispose();
-            Marshal.ReleaseComObject(DeviceContext);
+            DeviceContext.Dispose();
         }
 
         // Free any unmanaged objects here.
@@ -68,13 +68,13 @@ public class D2DGraphics : IGraphics
 
             if (_useAntialias)
             {
-                DeviceContext.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-                DeviceContext.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
+                DeviceContext.Object.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+                DeviceContext.Object.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
             }
             else
             {
-                DeviceContext.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_ALIASED);
-                DeviceContext.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+                DeviceContext.Object.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_ALIASED);
+                DeviceContext.Object.SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE.D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
             }
         }
     }
@@ -83,7 +83,7 @@ public class D2DGraphics : IGraphics
     /// <summary>
     /// Gets the <see cref="ID2D1DeviceContext"></see> object used to control the drawing.
     /// </summary>
-    public ID2D1DeviceContext DeviceContext { get; init; }
+    public IComObject<ID2D1DeviceContext6> DeviceContext { get; init; }
 
 
     /// <summary>
@@ -105,7 +105,7 @@ public class D2DGraphics : IGraphics
     /// Initialize new instance of <see cref="D2DGraphics"/>.
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
-    public D2DGraphics(ID2D1DeviceContext? dc, IComObject<ID2D1Factory>? d2dF, IComObject<IDWriteFactory>? wf)
+    public D2DGraphics(IComObject<ID2D1DeviceContext6>? dc, IComObject<ID2D1Factory>? d2dF, IComObject<IDWriteFactory>? wf)
     {
         if (dc == null)
         {
@@ -134,7 +134,7 @@ public class D2DGraphics : IGraphics
 
     public void DrawBitmap(object? bitmap, RectangleF? destRect = null, RectangleF? srcRect = null, InterpolationMode interpolation = InterpolationMode.NearestNeighbor, float opacity = 1)
     {
-        if (bitmap is not ID2D1Bitmap bmp) return;
+        if (bitmap is not ComObject<ID2D1Bitmap1> bmp) return;
 
         D2D_RECT_F? sourceRect = null;
         D2D_RECT_F? destinationRect = null;
@@ -190,30 +190,20 @@ public class D2DGraphics : IGraphics
         {
             // create solid brush for background
             var bgColor = DXHelper.FromColor(fillColor.Value);
-            var bgBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
-            {
-                opacity = 1f,
-            }.StructureToPtr();
-            DeviceContext.CreateSolidColorBrush(bgColor, bgBrushStylePtr, out var bgBrush);
+            using var bgBrush = DeviceContext.CreateSolidColorBrush(bgColor);
 
             // draw background
             DeviceContext.FillEllipse(ellipse, bgBrush);
-            Marshal.FreeHGlobal(bgBrushStylePtr);
         }
 
 
         // draw ellipse border ------------------------------------
         // create solid brush for border
         var bdColor = DXHelper.FromColor(borderColor);
-        var bdBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
-        {
-            opacity = 1f,
-        }.StructureToPtr();
-        DeviceContext.CreateSolidColorBrush(bdColor, bdBrushStylePtr, out var bdBrush);
+        using var bdBrush = DeviceContext.CreateSolidColorBrush(bdColor);
 
         // draw border
         DeviceContext.DrawEllipse(ellipse, bdBrush, strokeWidth);
-        Marshal.FreeHGlobal(bdBrushStylePtr);
     }
 
     #endregion // Draw/Fill ellipse
@@ -233,17 +223,10 @@ public class D2DGraphics : IGraphics
         var color = DXHelper.FromColor(c);
 
         // create solid brush
-        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
-        {
-            opacity = 1f,
-        }.StructureToPtr();
-        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
-
+        using var brush = DeviceContext.CreateSolidColorBrush(color);
 
         // start drawing the line
         DeviceContext.DrawLine(point1, point2, brush, strokeWidth);
-
-        Marshal.FreeHGlobal(brushStylePtr);
     }
 
     #endregion // Draw lines
@@ -273,30 +256,20 @@ public class D2DGraphics : IGraphics
         {
             // create solid brush for background
             var bgColor = DXHelper.FromColor(fillColor.Value);
-            var bgBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
-            {
-                opacity = 1f,
-            }.StructureToPtr();
-            DeviceContext.CreateSolidColorBrush(bgColor, bgBrushStylePtr, out var bgBrush);
+            using var bgBrush = DeviceContext.CreateSolidColorBrush(bgColor);
 
             // draw background
             DeviceContext.FillRoundedRectangle(roundedRect, bgBrush);
-            Marshal.FreeHGlobal(bgBrushStylePtr);
         }
 
 
         // draw rectangle border ------------------------------------
         // create solid brush for border
         var bdColor = DXHelper.FromColor(borderColor);
-        var bdBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
-        {
-            opacity = 1f,
-        }.StructureToPtr();
-        DeviceContext.CreateSolidColorBrush(bdColor, bdBrushStylePtr, out var bdBrush);
+        using var bdBrush = DeviceContext.CreateSolidColorBrush(bdColor);
 
         // draw border
         DeviceContext.DrawRoundedRectangle(roundedRect, bdBrush, strokeWidth);
-        Marshal.FreeHGlobal(bdBrushStylePtr);
     }
 
     #endregion // Draw/Fill Rectangle
@@ -315,14 +288,14 @@ public class D2DGraphics : IGraphics
     public void DrawText(string text, string fontFamilyName, float fontSize, RectangleF rect, Color c, float? textDpi = null, StringAlignment hAlign = StringAlignment.Near, StringAlignment vAlign = StringAlignment.Near, bool isBold = false, bool isItalic = false)
     {
         // backup base dpi
-        DeviceContext.GetDpi(out var baseDpiX, out var baseDpiY);
+        DeviceContext.Object.GetDpi(out var baseDpiX, out var baseDpiY);
         var region = new D2D_RECT_F(rect.Left, rect.Top, rect.Right, rect.Bottom);
 
         // fix DPI
         if (textDpi != null)
         {
             var dpiFactor = textDpi.Value / 96.0f;
-            DeviceContext.SetDpi(textDpi.Value, textDpi.Value);
+            DeviceContext.Object.SetDpi(textDpi.Value, textDpi.Value);
 
             fontSize += dpiFactor;
 
@@ -363,21 +336,16 @@ public class D2DGraphics : IGraphics
 
         // create solid brush
         var color = DXHelper.FromColor(c);
-        var brushStylePtr = new D2D1_BRUSH_PROPERTIES()
-        {
-            opacity = 1f,
-        }.StructureToPtr();
-        DeviceContext.CreateSolidColorBrush(color, brushStylePtr, out var brush);
+        using var brush = DeviceContext.CreateSolidColorBrush(color);
 
 
         // draw text
-        DeviceContext.DrawText(text, format.Object, region, brush, D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
-        Marshal.FreeHGlobal(brushStylePtr);
+        DeviceContext.DrawText(text, format, region, brush, D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
 
         // restore base dpi
         if (textDpi != null)
         {
-            DeviceContext.SetDpi(baseDpiX, baseDpiY);
+            DeviceContext.Object.SetDpi(baseDpiX, baseDpiY);
         }
     }
 
@@ -425,16 +393,15 @@ public class D2DGraphics : IGraphics
 
     public void Flush()
     {
-        DeviceContext.Flush(IntPtr.Zero, IntPtr.Zero);
+        DeviceContext.Object.Flush(IntPtr.Zero, IntPtr.Zero);
     }
 
 
     public void ClearBackground(Color color)
     {
-        var ptr = DXHelper.FromColor(color).StructureToPtr();
+        var d3Color = DXHelper.FromColor(color);
 
-        DeviceContext.Clear(ptr);
-        Marshal.FreeHGlobal(ptr);
+        DeviceContext.Clear(d3Color);
     }
 
 
@@ -535,16 +502,10 @@ public class D2DGraphics : IGraphics
         if (fillColor != null)
         {
             var bgColor = DXHelper.FromColor(fillColor.Value);
-            var bgBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
-            {
-                opacity = 1f,
-            }.StructureToPtr();
-            DeviceContext.CreateSolidColorBrush(bgColor, bgBrushStylePtr, out var bgBrush);
+            using var bgBrush = DeviceContext.CreateSolidColorBrush(bgColor);
 
             // fill the combined geometry
-            DeviceContext.FillGeometry(geometry.Object, bgBrush);
-
-            Marshal.FreeHGlobal(bgBrushStylePtr);
+            DeviceContext.FillGeometry(geometry, bgBrush);
         }
 
 
@@ -552,16 +513,10 @@ public class D2DGraphics : IGraphics
         if (borderColor != Color.Transparent)
         {
             var bdColor = DXHelper.FromColor(borderColor);
-            var borderBrushStylePtr = new D2D1_BRUSH_PROPERTIES()
-            {
-                opacity = 1f,
-            }.StructureToPtr();
-            DeviceContext.CreateSolidColorBrush(bdColor, borderBrushStylePtr, out var borderBrush);
+            using var borderBrush = DeviceContext.CreateSolidColorBrush(bdColor);
 
             // draw the combined geometry
-            DeviceContext.DrawGeometry(geometry.Object, borderBrush, strokeWidth);
-
-            Marshal.FreeHGlobal(borderBrushStylePtr);
+            DeviceContext.DrawGeometry(geometry, borderBrush, strokeWidth);
         }
     }
 
