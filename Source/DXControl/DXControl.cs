@@ -200,6 +200,12 @@ public class DXControl : Control
     public event EventHandler<FrameEventArgs>? Frame;
 
 
+    /// <summary>
+    /// Occurs when the <see cref="VerticalBlankTicker.WaitError"/> event is fired.
+    /// </summary>
+    public event EventHandler<VerticalBlankTickerErrorEventArgs>? VerticalBlankTickerWaitError;
+
+
     #endregion
 
 
@@ -464,6 +470,16 @@ public class DXControl : Control
 
 
     /// <summary>
+    /// Triggers <see cref="VerticalBlankTickerWaitError"/> event
+    /// when <see cref="VerticalBlankTicker.WaitError"/> is fired.
+    /// </summary>
+    protected virtual void OnVerticalBlankTickerWaitError(VerticalBlankTickerErrorEventArgs e)
+    {
+        VerticalBlankTickerWaitError?.Invoke(_ticker, e);
+    }
+
+
+    /// <summary>
     /// Invalidates client retangle of the control and causes a paint message to the control. This does not apply to child controls.
     /// </summary>
     public new void Invalidate()
@@ -490,15 +506,20 @@ public class DXControl : Control
     private void Ticker_WaitError(object? sender, VerticalBlankTickerErrorEventArgs e)
     {
         const uint UNKNOWN_ERROR = 0xc01e0006;
+        const uint WAIT_TIMEOUT = 258;
 
         // happens when the screen is off, we handle this error and put the thread
         // into sleep so that it will auto-recover when the screen is on again
         // https://github.com/smourier/DirectN/issues/29
-        if (e.Error == unchecked((int)UNKNOWN_ERROR))
+        if (e.Error == unchecked((int)UNKNOWN_ERROR)
+            || e.Error == WAIT_TIMEOUT)
         {
             Thread.Sleep(1000);
             e.Handled = true;
         }
+
+        // re-emits event
+        OnVerticalBlankTickerWaitError(e);
     }
 
     #endregion // Private functions
