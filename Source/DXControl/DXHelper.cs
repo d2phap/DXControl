@@ -4,7 +4,6 @@ Copyright (C) 2022 - 2023 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
-using System.Runtime.InteropServices;
 using WicNet;
 
 namespace D2Phap;
@@ -14,14 +13,14 @@ public static class DXHelper
     /// <summary>
     /// Disposes the Direct2D1 bitmap.
     /// </summary>
-    public static void DisposeD2D1Bitmap(ref IComObject<ID2D1Bitmap>? bmp)
+    public static void DisposeD2D1Bitmap(ref IComObject<ID2D1Bitmap1>? bmp)
     {
         if (bmp == null) return;
 
         Interlocked.Exchange(ref bmp, null)?.Dispose();
     }
 
-    
+
     /// <summary>
     /// Converts <see cref="Color"/> to <see cref="_D3DCOLORVALUE"/>.
     /// </summary>
@@ -96,9 +95,9 @@ public static class DXHelper
     /// <summary>
     /// Creates default <see cref="D2D1_BITMAP_PROPERTIES"/>.
     /// </summary>
-    public static D2D1_BITMAP_PROPERTIES CreateDefaultBitmapProps()
+    public static D2D1_BITMAP_PROPERTIES1 CreateDefaultBitmapProps()
     {
-        return new D2D1_BITMAP_PROPERTIES()
+        return new D2D1_BITMAP_PROPERTIES1()
         {
             pixelFormat = new D2D1_PIXEL_FORMAT()
             {
@@ -115,7 +114,7 @@ public static class DXHelper
     /// <summary>
     /// Converts <see cref="WicBitmapSource"/> to <see cref="ID2D1Bitmap"/> COM object.
     /// </summary>
-    public static ComObject<ID2D1Bitmap>? ToD2D1Bitmap(ID2D1DeviceContext? dc, WicBitmapSource? wicSrc)
+    public static IComObject<ID2D1Bitmap1>? ToD2D1Bitmap(IComObject<ID2D1DeviceContext6>? dc, WicBitmapSource? wicSrc, D2D1_BITMAP_PROPERTIES1? bitmapProps = null)
     {
         if (dc == null || wicSrc == null)
         {
@@ -125,7 +124,7 @@ public static class DXHelper
         wicSrc.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
 
         // create D2D1Bitmap from WICBitmapSource
-        var bitmapPropsPtr = new D2D1_BITMAP_PROPERTIES()
+        bitmapProps ??= new D2D1_BITMAP_PROPERTIES1()
         {
             pixelFormat = new D2D1_PIXEL_FORMAT()
             {
@@ -134,13 +133,9 @@ public static class DXHelper
             },
             dpiX = 96.0f,
             dpiY = 96.0f,
-        }.StructureToPtr();
+        };
 
-        _ = dc.CreateBitmapFromWicBitmap(wicSrc.ComObject.Object, bitmapPropsPtr, out ID2D1Bitmap? bmp).ThrowOnError();
-
-        var comBmp = new ComObject<ID2D1Bitmap>(bmp);
-
-        Marshal.FreeHGlobal(bitmapPropsPtr);
+        var comBmp = dc.CreateBitmapFromWicBitmap(wicSrc.ComObject, bitmapProps);
 
         return comBmp;
     }
