@@ -224,7 +224,7 @@ public class GdipGraphics : IGraphics
         if (isBold) style |= FontStyle.Bold;
         if (isItalic) style |= FontStyle.Italic;
 
-        
+
         using var font = new Font(fontFamilyName, fontSize, style, GraphicsUnit.Pixel);
         using var brush = new SolidBrush(c);
 

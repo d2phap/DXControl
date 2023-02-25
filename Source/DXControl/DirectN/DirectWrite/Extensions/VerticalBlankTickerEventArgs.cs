@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DirectN
+﻿namespace DirectN
 {
     public sealed class VerticalBlankTickerEventArgs : EventArgs
     {

@@ -55,7 +55,7 @@ namespace DirectN
                 IsBackground = true,
                 Name = "_vbt_",
             };
-            
+
             configure?.Invoke(_thread);
             _thread.Start(deviceName);
         }

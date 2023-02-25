@@ -127,4 +127,5 @@ public class DXCanvas : DXControl
         base.OnFrame(e);
         //rectText.Width++;
     }
+
 }
