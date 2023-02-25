@@ -22,8 +22,8 @@ public class DXControl : Control
     protected readonly VerticalBlankTicker _ticker = new();
 
     // Protected properties
-    protected readonly IComObject<ID2D1Factory> _d2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
-    protected readonly IComObject<IDWriteFactory> _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+    protected readonly IComObject<ID2D1Factory1> _d2DFactory = D2D1Functions.D2D1CreateFactory<ID2D1Factory1>(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+    protected readonly IComObject<IDWriteFactory5> _dWriteFactory = DWriteFunctions.DWriteCreateFactory<IDWriteFactory5>(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
     protected IComObject<ID2D1HwndRenderTarget>? _renderTarget;
     protected IComObject<ID2D1DeviceContext6>? _device;
     protected D2DGraphics? _graphicsD2d;
@@ -47,14 +47,14 @@ public class DXControl : Control
     /// Gets Direct2D factory.
     /// </summary>
     [Browsable(false)]
-    public IComObject<ID2D1Factory> Direct2DFactory => _d2DFactory;
+    public IComObject<ID2D1Factory1> Direct2DFactory => _d2DFactory;
 
 
     /// <summary>
     /// Gets DirectWrite factory.
     /// </summary>
     [Browsable(false)]
-    public IComObject<IDWriteFactory> DirectWriteFactory => _dWriteFactory;
+    public IComObject<IDWriteFactory5> DirectWriteFactory => _dWriteFactory;
 
 
     /// <summary>

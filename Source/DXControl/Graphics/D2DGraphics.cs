@@ -81,21 +81,21 @@ public class D2DGraphics : IGraphics
 
 
     /// <summary>
-    /// Gets the <see cref="ID2D1DeviceContext"></see> object used to control the drawing.
+    /// Gets the <see cref="ID2D1DeviceContext6"></see> object used to control the drawing.
     /// </summary>
     public IComObject<ID2D1DeviceContext6> DeviceContext { get; init; }
 
 
     /// <summary>
-    /// Gets the <see cref="ID2D1Factory"/> object wrapped into the <see cref="IComObject{T}"/> for drawing.
+    /// Gets the <see cref="ID2D1Factory1"/> object wrapped into the <see cref="IComObject{T}"/> for drawing.
     /// </summary>
-    public IComObject<ID2D1Factory> D2DFactory { get; init; }
+    public IComObject<ID2D1Factory1> D2DFactory { get; init; }
 
 
     /// <summary>
-    /// Gets the <see cref="IDWriteFactory"/> object wrapped into the <see cref="IComObject{T}"/> for drawing text.
+    /// Gets the <see cref="IDWriteFactory5"/> object wrapped into the <see cref="IComObject{T}"/> for drawing text.
     /// </summary>
-    public IComObject<IDWriteFactory> DWriteFactory { get; init; }
+    public IComObject<IDWriteFactory5> DWriteFactory { get; init; }
 
     #endregion // Public properties
 
@@ -105,7 +105,7 @@ public class D2DGraphics : IGraphics
     /// Initialize new instance of <see cref="D2DGraphics"/>.
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
-    public D2DGraphics(IComObject<ID2D1DeviceContext6>? dc, IComObject<ID2D1Factory>? d2dF, IComObject<IDWriteFactory>? wf)
+    public D2DGraphics(IComObject<ID2D1DeviceContext6>? dc, IComObject<ID2D1Factory1>? d2dF, IComObject<IDWriteFactory5>? wf)
     {
         if (dc == null)
         {
