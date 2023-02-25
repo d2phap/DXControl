@@ -5,7 +5,6 @@ Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace D2Phap;
 
@@ -25,8 +24,8 @@ public class DXControl : Control
     // Protected properties
     protected readonly IComObject<ID2D1Factory> _d2DFactory = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
     protected readonly IComObject<IDWriteFactory> _dWriteFactory = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
-    protected ID2D1HwndRenderTarget? _renderTarget;
-    protected ID2D1DeviceContext? _device;
+    protected IComObject<ID2D1HwndRenderTarget>? _renderTarget;
+    protected IComObject<ID2D1DeviceContext6>? _device;
     protected D2DGraphics? _graphicsD2d;
     protected GdipGraphics? _graphicsGdi;
 
@@ -62,14 +61,14 @@ public class DXControl : Control
     /// Gets render target for this control.
     /// </summary>
     [Browsable(false)]
-    public ID2D1HwndRenderTarget? RenderTarget => _renderTarget;
+    public IComObject<ID2D1HwndRenderTarget>? RenderTarget => _renderTarget;
 
 
     /// <summary>
-    /// Gets Direct2D device.
+    /// Gets Direct2D device context.
     /// </summary>
     [Browsable(false)]
-    public ID2D1DeviceContext Device
+    public IComObject<ID2D1DeviceContext6> Device
     {
         get
         {
@@ -112,7 +111,7 @@ public class DXControl : Control
             if (_device == null) return;
 
             _dpi = value;
-            _device.SetDpi(_dpi, _dpi);
+            _device.Object.SetDpi(_dpi, _dpi);
         }
     }
 
@@ -534,13 +533,13 @@ public class DXControl : Control
             presentOptions = D2D1_PRESENT_OPTIONS.D2D1_PRESENT_OPTIONS_NONE,
         };
 
-        _d2DFactory.Object.CreateHwndRenderTarget(renderTargetProps, hwndRenderTargetProps, out _renderTarget).ThrowOnError();
+        _renderTarget = _d2DFactory.CreateHwndRenderTarget(hwndRenderTargetProps, renderTargetProps);
 
-        _renderTarget.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-        _renderTarget.SetDpi(BaseDpi, BaseDpi);
+        _renderTarget.Object.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        _renderTarget.Object.SetDpi(BaseDpi, BaseDpi);
         _renderTarget.Resize(new((uint)ClientSize.Width, (uint)ClientSize.Height));
 
-        _device = (ID2D1DeviceContext)_renderTarget;
+        _device = _renderTarget.AsComObject<ID2D1DeviceContext6>();
         _graphicsD2d = new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
     }
 
@@ -550,17 +549,11 @@ public class DXControl : Control
     /// </summary>
     public void DisposeDevice()
     {
-        if (_device != null)
-        {
-            Marshal.ReleaseComObject(_device);
-            _device = null;
-        }
+        _device?.Dispose();
+        _device = null;
 
-        if (_renderTarget != null)
-        {
-            Marshal.ReleaseComObject(_renderTarget);
-            _renderTarget = null;
-        }
+        _renderTarget?.Dispose();
+        _renderTarget = null;
 
         GC.Collect();
     }
