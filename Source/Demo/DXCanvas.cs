@@ -6,14 +6,13 @@ Project & license info: https://github.com/d2phap/DXControl
 using D2Phap;
 using DirectN;
 using WicNet;
-using WicNet.Utilities;
 using InterpolationMode = D2Phap.InterpolationMode;
 
 namespace Demo;
 
 public class DXCanvas : DXControl
 {
-    private IComObject<ID2D1Bitmap>? _bitmapD2d = null;
+    private IComObject<ID2D1Bitmap1>? _bitmapD2d = null;
     private Rectangle rectText = new(40, 40, 300, 200);
 
     public WicBitmapSource? Image
@@ -30,24 +29,10 @@ public class DXCanvas : DXControl
             }
 
             // create D2DBitmap from WICBitmapSource
-            var bitmapProps = new D2D1_BITMAP_PROPERTIES()
-            {
-                pixelFormat = new D2D1_PIXEL_FORMAT()
-                {
-                    alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
-                    format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-                },
-                dpiX = 96.0f,
-                dpiY = 96.0f,
-            };
-            var bitmapPropsPtr = bitmapProps.StructureToPtr();
-
+            var bitmapProps = DXHelper.CreateDefaultBitmapProps();
             value.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
-            Device.CreateBitmapFromWicBitmap(value.ComObject.Object, bitmapPropsPtr,
-                out ID2D1Bitmap bmp)
-                .ThrowOnError();
 
-            _bitmapD2d = new ComObject<ID2D1Bitmap>(bmp);
+            _bitmapD2d = Device.CreateBitmapFromWicBitmap<ID2D1Bitmap1>(value.ComObject, bitmapProps);
         }
     }
 
@@ -75,7 +60,7 @@ public class DXCanvas : DXControl
         if (UseHardwareAcceleration && _bitmapD2d != null)
         {
             _bitmapD2d.Object.GetSize(out var size);
-            g.DrawBitmap(_bitmapD2d.Object,
+            g.DrawBitmap(_bitmapD2d,
                 destRect: new RectangleF(150, 150, size.width * 5, size.height * 5),
                 srcRect: new RectangleF(0, 0, size.width, size.height),
                 interpolation: InterpolationMode.NearestNeighbor
