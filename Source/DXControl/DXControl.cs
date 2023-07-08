@@ -551,7 +551,7 @@ public class DXControl : Control
         {
             hwnd = Handle,
             pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height),
-            presentOptions = D2D1_PRESENT_OPTIONS.D2D1_PRESENT_OPTIONS_NONE,
+            presentOptions = D2D1_PRESENT_OPTIONS.D2D1_PRESENT_OPTIONS_IMMEDIATELY,
         };
 
         _renderTarget = _d2DFactory.CreateHwndRenderTarget(hwndRenderTargetProps, renderTargetProps);
