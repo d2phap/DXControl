@@ -20,7 +20,7 @@
 - Supports animation drawing for both Direct2D and GDI+.
 
 ## Requirements:
-- .NET 6.0, 7.0
+- .NET 6.0, 7.0, 8.0
 
 ## Installation
 Run the command
