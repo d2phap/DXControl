@@ -5,6 +5,7 @@ Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
 using System.ComponentModel;
+using WicNet.Utilities;
 
 namespace D2Phap;
 
@@ -289,7 +290,7 @@ public class DXControl : Control
                     else
                     {
                         _device?.BeginDraw();
-                        _device?.Clear(_D3DCOLORVALUE.FromColor(BackColor));
+                        _device?.Clear(BackColor.ToD3DCOLORVALUE());
                         _device?.EndDraw();
                     }
                 }
@@ -386,7 +387,7 @@ public class DXControl : Control
             _graphicsD2d ??= new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
 
             _device.BeginDraw();
-            _device.Clear(_D3DCOLORVALUE.FromColor(BackColor));
+            _device.Clear(BackColor.ToD3DCOLORVALUE());
             OnRender(_graphicsD2d);
             _device.EndDraw();
         }

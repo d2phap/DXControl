@@ -12,7 +12,7 @@
     <Product>D2Phap.$(AssemblyName)</Product>
     <Description>A WinForms hybrid control that supports both Direct2D and GDI+ drawing thanks to WicNet. This control has being used in https://github.com/d2phap/ImageGlass since version 9.0.
     </Description>
-    <Copyright>Copyright (C) 2022 - 2023 Duong Dieu Phap. All rights reserved.</Copyright>
+    <Copyright>Copyright (C) 2022 - 2024 Duong Dieu Phap. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/d2phap/DXControl</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/d2phap/DXControl</RepositoryUrl>
@@ -21,7 +21,7 @@
     <IncludeSymbols>True</IncludeSymbols>
     <PackageReleaseNotes>See release notes here: https://github.com/d2phap/DXControl/releases</PackageReleaseNotes>
     <Authors>Duong Dieu Phap</Authors>
-    <VersionPrefix>2.7.0</VersionPrefix>
+    <VersionPrefix>3.0.0</VersionPrefix>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
       <PublishRepositoryUrl>true</PublishRepositoryUrl>
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -51,11 +51,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DirectNStandard" Version="1.15.0.2" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WicNet" Version="1.6.5" />
+    <PackageReference Include="WicNet" Version="1.7.1" />
   </ItemGroup>
 
 </Project>
