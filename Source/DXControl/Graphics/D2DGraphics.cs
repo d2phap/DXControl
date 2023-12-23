@@ -151,12 +151,16 @@ public class D2DGraphics : IGraphics
 
         if (destRect != null)
         {
-            destinationRect = new D2D_RECT_F(
-                destRect.Value.Left,
-                destRect.Value.Top,
-                destRect.Value.Right,
-                destRect.Value.Bottom);
+            // Note: Bitmap will be scaled if the x, y are float numbers
+            // https://github.com/d2phap/ImageGlass/issues/1786
+            var left = (int)destRect.Value.Left;
+            var top = (int)destRect.Value.Top;
+            var right = left + destRect.Value.Width;
+            var bottom = top + destRect.Value.Height;
+
+            destinationRect = new D2D_RECT_F(left, top, right, bottom);
         }
+
 
         DeviceContext.DrawBitmap(bmp, opacity, (D2D1_INTERPOLATION_MODE)interpolation, destinationRect, sourceRect);
     }
