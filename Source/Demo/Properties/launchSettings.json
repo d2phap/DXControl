@@ -2,7 +2,7 @@
   "profiles": {
     "Demo": {
       "commandName": "Project",
-      "commandLineArgs": "\"photo.png\""
+      "commandLineArgs": "\"C:\\Users\\d2pha\\Desktop\\400.png\""
     }
   }
 }

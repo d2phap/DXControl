@@ -1,6 +1,6 @@
 ﻿/*
 MIT License
-Copyright (C) 2022 - 2023 DUONG DIEU PHAP
+Copyright (C) 2022 - 2024 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;

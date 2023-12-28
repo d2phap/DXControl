@@ -1,6 +1,6 @@
 ﻿/*
 MIT License
-Copyright (C) 2022 - 2023 DUONG DIEU PHAP
+Copyright (C) 2022 - 2024 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using D2Phap;
@@ -61,7 +61,7 @@ public class DXCanvas : DXControl
         {
             _bitmapD2d.Object.GetSize(out var size);
             g.DrawBitmap(_bitmapD2d,
-                destRect: new RectangleF(150, 150, size.width * 5, size.height * 5),
+                destRect: new RectangleF(150, 150, size.width * 3, size.height * 3),
                 srcRect: new RectangleF(0, 0, size.width, size.height),
                 interpolation: InterpolationMode.NearestNeighbor
                 );
@@ -70,7 +70,7 @@ public class DXCanvas : DXControl
         else if (!UseHardwareAcceleration && Bitmap != null)
         {
             g.DrawBitmap(Bitmap,
-                destRect: new RectangleF(150, 150, Bitmap.Width * 5, Bitmap.Height * 5),
+                destRect: new RectangleF(150, 150, Bitmap.Width * 3, Bitmap.Height * 3),
                 srcRect: new RectangleF(0, 0, Bitmap.Width, Bitmap.Height),
                 interpolation: InterpolationMode.NearestNeighbor
                 );
@@ -115,7 +115,7 @@ public class DXCanvas : DXControl
         g.DrawRectangle(new RectangleF(rectText.Location, textSize), 0, Color.Red);
 
 
-        // draw FPD info
+        // draw FPS info
         var engine = UseHardwareAcceleration ? "GPU" : "GDI+";
         g.DrawText($"FPS: {FPS} - {engine}", Font.Name, 18, 0, 0, Color.Purple, DeviceDpi);
 
