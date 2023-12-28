@@ -1,6 +1,6 @@
 ﻿/*
 MIT License
-Copyright (C) 2022 DUONG DIEU PHAP
+Copyright (C) 2022-2024 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
 using DirectN;
@@ -506,14 +506,20 @@ public class DXControl : Control
 
     private void Ticker_WaitError(object? sender, VerticalBlankTickerErrorEventArgs e)
     {
-        const uint UNKNOWN_ERROR = 0xc01e0006;
         const uint WAIT_TIMEOUT = 258;
+
+        // Win Server 2019: Unknown Error https://github.com/d2phap/ImageGlass/issues/1771
+        const uint UNKNOWN_ERROR_WinSrv2019 = 0xc000000d;
 
         // happens when the screen is off, we handle this error and put the thread
         // into sleep so that it will auto-recover when the screen is on again
         // https://github.com/smourier/DirectN/issues/29
-        if (e.Error == unchecked((int)UNKNOWN_ERROR)
-            || e.Error == WAIT_TIMEOUT)
+        const uint UNKNOWN_ERROR = 0xc01e0006;
+        
+
+        if (e.Error == WAIT_TIMEOUT
+            || e.Error == unchecked((int)UNKNOWN_ERROR)
+            || e.Error == unchecked((int)UNKNOWN_ERROR_WinSrv2019))
         {
             Thread.Sleep(1000);
             e.Handled = true;
