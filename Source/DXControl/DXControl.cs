@@ -20,7 +20,7 @@ public class DXControl : Control
 
     protected bool _isControlLoaded = false;
     protected float _dpi = 96.0f;
-    protected readonly VerticalBlankTicker _ticker = new();
+    protected readonly PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(10));
 
     // Protected properties
     protected readonly IComObject<ID2D1Factory1> _d2DFactory = D2D1Functions.D2D1CreateFactory<ID2D1Factory1>(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
@@ -33,7 +33,6 @@ public class DXControl : Control
 
     protected bool _useHardwardAcceleration = true;
     protected bool _firstPaintBackground = true;
-    protected bool _enableAnimation = true;
     protected int _currentFps = 0;
     protected int _lastFps = 0;
     protected DateTime _lastFpsUpdate = DateTime.UtcNow;
@@ -146,27 +145,7 @@ public class DXControl : Control
     /// </summary>
     [Category("Animation")]
     [DefaultValue(true)]
-    public bool EnableAnimation
-    {
-        get => _enableAnimation;
-        set
-        {
-            _enableAnimation = value;
-
-            if (!_enableAnimation)
-            {
-                if (_ticker.IsRunning) _ticker.Stop(1000);
-            }
-            else
-            {
-                if (!_ticker.IsRunning)
-                {
-                    _ticker.ResetTicks();
-                    _ticker.Start();
-                }
-            }
-        }
-    }
+    public bool EnableAnimation { get; set; } = true;
 
 
     /// <summary>
@@ -201,12 +180,6 @@ public class DXControl : Control
     public event EventHandler<FrameEventArgs>? Frame;
 
 
-    /// <summary>
-    /// Occurs when the <see cref="VerticalBlankTicker.WaitError"/> event is fired.
-    /// </summary>
-    public event EventHandler<VerticalBlankTickerErrorEventArgs>? VerticalBlankTickerWaitError;
-
-
     #endregion
 
 
@@ -236,10 +209,8 @@ public class DXControl : Control
         }
 
 
-        // animation initiation
-        _ticker.Tick += Ticker_Tick;
-        _ticker.WaitError += Ticker_WaitError;
-        _ticker.Start();
+        // start framing timer
+        _ = StartFramingTimerAsync();
     }
 
 
@@ -258,9 +229,7 @@ public class DXControl : Control
     {
         base.Dispose(disposing);
 
-        _ticker.Stop(1000);
-        _ticker.Tick -= Ticker_Tick;
-        _ticker.WaitError -= Ticker_WaitError;
+        _timer.Dispose();
 
         _graphicsD2d?.Dispose();
         _graphicsD2d = null;
@@ -424,13 +393,6 @@ public class DXControl : Control
                 _currentFps++;
             }
         }
-
-
-        // Start animation
-        if (_enableAnimation && !_ticker.IsRunning)
-        {
-            _ticker.Start();
-        }
     }
 
 
@@ -471,16 +433,6 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Triggers <see cref="VerticalBlankTickerWaitError"/> event
-    /// when <see cref="VerticalBlankTicker.WaitError"/> is fired.
-    /// </summary>
-    protected virtual void OnVerticalBlankTickerWaitError(VerticalBlankTickerErrorEventArgs e)
-    {
-        VerticalBlankTickerWaitError?.Invoke(_ticker, e);
-    }
-
-
-    /// <summary>
     /// Invalidates client retangle of the control and causes a paint message to the control. This does not apply to child controls.
     /// </summary>
     public new void Invalidate()
@@ -494,42 +446,30 @@ public class DXControl : Control
     // Private functions
     #region Private functions
 
-
-    private void Ticker_Tick(object? sender, VerticalBlankTickerEventArgs e)
+    private async Task StartFramingTimerAsync()
     {
-        if (EnableAnimation && RequestUpdateFrame)
+        while (await _timer.WaitForNextTickAsync())
         {
-            OnFrame(new(e.Ticks));
-            Invalidate();
+            if (EnableAnimation && RequestUpdateFrame)
+            {
+                var e = new FrameEventArgs();
+
+#if NET8_0_OR_GREATER
+                e.Period = _timer.Period;
+#endif
+
+                OnFrame(e);
+                Invalidate();
+
+#if NET8_0_OR_GREATER
+                _timer.Period = e.Period;
+#endif
+            }
         }
     }
 
-    private void Ticker_WaitError(object? sender, VerticalBlankTickerErrorEventArgs e)
-    {
-        const uint WAIT_TIMEOUT = 258;
 
-        // Win Server 2019: Unknown Error https://github.com/d2phap/ImageGlass/issues/1771
-        const uint UNKNOWN_ERROR_WinSrv2019 = 0xc000000d;
-
-        // happens when the screen is off, we handle this error and put the thread
-        // into sleep so that it will auto-recover when the screen is on again
-        // https://github.com/smourier/DirectN/issues/29
-        const uint UNKNOWN_ERROR = 0xc01e0006;
-        
-
-        if (e.Error == WAIT_TIMEOUT
-            || e.Error == unchecked((int)UNKNOWN_ERROR)
-            || e.Error == unchecked((int)UNKNOWN_ERROR_WinSrv2019))
-        {
-            Thread.Sleep(1000);
-            e.Handled = true;
-        }
-
-        // re-emits event
-        OnVerticalBlankTickerWaitError(e);
-    }
-
-    #endregion // Private functions
+#endregion // Private functions
 
 
     // Public functions

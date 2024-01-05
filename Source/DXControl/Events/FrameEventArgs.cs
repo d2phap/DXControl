@@ -11,14 +11,14 @@ namespace D2Phap;
 /// </summary>
 public class FrameEventArgs : EventArgs
 {
+#if NET8_0_OR_GREATER
+
     /// <summary>
-    /// Gets the number of ticks
+    /// Gets, sets the period for <see cref="PeriodicTimer"/>.
     /// </summary>
-    public long Ticks { get; init; }
+    public TimeSpan Period { get; set; } = TimeSpan.FromMilliseconds(10);
 
+#endif
 
-    public FrameEventArgs(long ticks)
-    {
-        Ticks = ticks;
-    }
+    public FrameEventArgs() { }
 }
