@@ -28,64 +28,79 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.canvas = new Demo.DXCanvas();
-            this.chkD2D = new System.Windows.Forms.CheckBox();
-            this.SuspendLayout();
+            canvas = new DXCanvas();
+            chkD2D = new CheckBox();
+            chkAnimation = new CheckBox();
+            SuspendLayout();
             // 
             // canvas
             // 
-            this.canvas.AllowDrop = true;
-            this.canvas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.canvas.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.canvas.BaseDpi = 96F;
-            this.canvas.Bitmap = null;
-            this.canvas.CheckFPS = true;
-            this.canvas.Location = new System.Drawing.Point(19, 82);
-            this.canvas.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this.canvas.Name = "canvas";
-            this.canvas.RequestUpdateFrame = true;
-            this.canvas.Size = new System.Drawing.Size(1997, 1178);
-            this.canvas.TabIndex = 0;
-            this.canvas.Text = "dxCanvas1";
-            this.canvas.DragDrop += new System.Windows.Forms.DragEventHandler(this.canvas_DragDrop);
-            this.canvas.DragOver += new System.Windows.Forms.DragEventHandler(this.canvas_DragOver);
+            canvas.AllowDrop = true;
+            canvas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            canvas.BackColor = Color.FromArgb(128, 128, 255);
+            canvas.BaseDpi = 96F;
+            canvas.Bitmap = null;
+            canvas.CheckFPS = true;
+            canvas.EnableAnimation = true;
+            canvas.Location = new Point(20, 90);
+            canvas.Margin = new Padding(6, 5, 6, 5);
+            canvas.Name = "canvas";
+            canvas.RequestUpdateFrame = true;
+            canvas.Size = new Size(2114, 1293);
+            canvas.TabIndex = 0;
+            canvas.Text = "dxCanvas1";
+            canvas.DragDrop += canvas_DragDrop;
+            canvas.DragOver += canvas_DragOver;
             // 
             // chkD2D
             // 
-            this.chkD2D.AutoSize = true;
-            this.chkD2D.Checked = true;
-            this.chkD2D.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkD2D.Location = new System.Drawing.Point(19, 23);
-            this.chkD2D.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this.chkD2D.Name = "chkD2D";
-            this.chkD2D.Size = new System.Drawing.Size(349, 45);
-            this.chkD2D.TabIndex = 1;
-            this.chkD2D.Text = "Use Direct2D graphics";
-            this.chkD2D.UseVisualStyleBackColor = true;
-            this.chkD2D.CheckedChanged += new System.EventHandler(this.chkD2D_CheckedChanged);
+            chkD2D.AutoSize = true;
+            chkD2D.Checked = true;
+            chkD2D.CheckState = CheckState.Checked;
+            chkD2D.Location = new Point(20, 25);
+            chkD2D.Margin = new Padding(6, 5, 6, 5);
+            chkD2D.Name = "chkD2D";
+            chkD2D.Size = new Size(372, 49);
+            chkD2D.TabIndex = 1;
+            chkD2D.Text = "Use Direct2D graphics";
+            chkD2D.UseVisualStyleBackColor = true;
+            chkD2D.CheckedChanged += chkD2D_CheckedChanged;
+            // 
+            // chkAnimation
+            // 
+            chkAnimation.AutoSize = true;
+            chkAnimation.Checked = true;
+            chkAnimation.CheckState = CheckState.Checked;
+            chkAnimation.Location = new Point(484, 25);
+            chkAnimation.Margin = new Padding(6, 5, 6, 5);
+            chkAnimation.Name = "chkAnimation";
+            chkAnimation.Size = new Size(303, 49);
+            chkAnimation.TabIndex = 2;
+            chkAnimation.Text = "Enable animation";
+            chkAnimation.UseVisualStyleBackColor = true;
+            chkAnimation.CheckedChanged += ChkAnimation_CheckedChanged;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(17F, 41F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2034, 1278);
-            this.Controls.Add(this.chkD2D);
-            this.Controls.Add(this.canvas);
-            this.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this.Name = "Form1";
-            this.Padding = new System.Windows.Forms.Padding(19, 18, 19, 18);
-            this.Text = "D2Phap.DXControl demo";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(18F, 45F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(2154, 1403);
+            Controls.Add(chkAnimation);
+            Controls.Add(chkD2D);
+            Controls.Add(canvas);
+            Margin = new Padding(6, 5, 6, 5);
+            Name = "Form1";
+            Padding = new Padding(20);
+            Text = "D2Phap.DXControl demo";
+            Load += Form1_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
         private DXCanvas canvas;
         private CheckBox chkD2D;
+        private CheckBox chkAnimation;
     }
 }

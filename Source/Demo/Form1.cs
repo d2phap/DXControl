@@ -79,4 +79,9 @@ public partial class Form1 : Form
     {
         canvas.UseHardwareAcceleration = chkD2D.Checked;
     }
+
+    private void ChkAnimation_CheckedChanged(object sender, EventArgs e)
+    {
+        canvas.EnableAnimation = chkAnimation.Checked;
+    }
 }

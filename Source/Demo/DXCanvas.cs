@@ -42,7 +42,6 @@ public class DXCanvas : DXControl
     public DXCanvas()
     {
         CheckFPS = true;
-        //EnableAnimation = false;
     }
 
 
@@ -125,7 +124,7 @@ public class DXCanvas : DXControl
     protected override void OnFrame(FrameEventArgs e)
     {
         base.OnFrame(e);
-        //rectText.Width++;
+        rectText.Width++;
     }
 
 }
