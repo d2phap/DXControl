@@ -469,7 +469,7 @@ public class DXControl : Control
     }
 
 
-#endregion // Private functions
+    #endregion // Private functions
 
 
     // Public functions

@@ -3,6 +3,7 @@ MIT License
 Copyright (C) 2022-2024 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
+using DirectN;
 using ImageMagick;
 using Microsoft.Win32.SafeHandles;
 using System.Reflection;
@@ -21,10 +22,15 @@ public partial class Form1 : Form
 
     private void Form1_Load(object sender, EventArgs e)
     {
-        using var imgM = new MagickImage(Environment.GetCommandLineArgs()[1]);
-        canvas.Image = FromBitmapSource(imgM.ToBitmapSource());
+        var filePath = @"photo.png";
 
-        canvas.Bitmap = new Bitmap(Environment.GetCommandLineArgs()[1], true);
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            using var imgM = new MagickImage(filePath);
+            canvas.Image = FromBitmapSource(imgM.ToBitmapSource());
+
+            canvas.Bitmap = new Bitmap(filePath, true);
+        }
     }
 
 
