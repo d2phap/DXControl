@@ -23,8 +23,8 @@ public class DXControl : Control
     protected readonly PeriodicTimer _timer = new(TimeSpan.FromMilliseconds(10));
 
     // Protected properties
-    protected readonly IComObject<ID2D1Factory1> _d2DFactory = D2D1Functions.D2D1CreateFactory<ID2D1Factory1>(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
-    protected readonly IComObject<IDWriteFactory5> _dWriteFactory = DWriteFunctions.DWriteCreateFactory<IDWriteFactory5>(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+    protected IComObject<ID2D1Factory1>? _d2DFactory = null;
+    protected IComObject<IDWriteFactory5>? _dWriteFactory = null;
     protected IComObject<ID2D1HwndRenderTarget>? _renderTarget;
     protected IComObject<ID2D1DeviceContext6>? _device;
     protected D2DGraphics? _graphicsD2d;
@@ -47,14 +47,14 @@ public class DXControl : Control
     /// Gets Direct2D factory.
     /// </summary>
     [Browsable(false)]
-    public IComObject<ID2D1Factory1> Direct2DFactory => _d2DFactory;
+    public IComObject<ID2D1Factory1>? Direct2DFactory => _d2DFactory;
 
 
     /// <summary>
     /// Gets DirectWrite factory.
     /// </summary>
     [Browsable(false)]
-    public IComObject<IDWriteFactory5> DirectWriteFactory => _dWriteFactory;
+    public IComObject<IDWriteFactory5>? DirectWriteFactory => _dWriteFactory;
 
 
     /// <summary>
@@ -218,9 +218,6 @@ public class DXControl : Control
     {
         base.DestroyHandle();
 
-        _d2DFactory.Dispose();
-        _dWriteFactory.Dispose();
-
         DisposeDevice();
     }
 
@@ -272,8 +269,6 @@ public class DXControl : Control
                 break;
 
             case WM_DESTROY:
-                _d2DFactory.Dispose();
-                _dWriteFactory.Dispose();
                 DisposeDevice();
 
                 base.WndProc(ref m);
@@ -480,6 +475,9 @@ public class DXControl : Control
     /// </summary>
     public void CreateDevice()
     {
+        _d2DFactory = D2D1Functions.D2D1CreateFactory<ID2D1Factory1>(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+        _dWriteFactory = DWriteFunctions.DWriteCreateFactory<IDWriteFactory5>(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+
         var renderTargetProps = new D2D1_RENDER_TARGET_PROPERTIES()
         {
             dpiX = _dpi,
@@ -517,11 +515,20 @@ public class DXControl : Control
     /// </summary>
     public void DisposeDevice()
     {
+        _graphicsD2d?.Dispose();
+        _graphicsD2d = null;
+
         _device?.Dispose();
         _device = null;
 
         _renderTarget?.Dispose();
         _renderTarget = null;
+
+        _d2DFactory?.Dispose();
+        _d2DFactory = null;
+
+        _dWriteFactory?.Dispose();
+        _dWriteFactory = null;
 
         GC.Collect();
     }

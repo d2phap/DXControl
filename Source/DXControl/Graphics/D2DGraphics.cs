@@ -26,9 +26,6 @@ public class D2DGraphics : IGraphics
         if (disposing)
         {
             // Free any other managed objects here.
-
-            DWriteFactory.Dispose();
-            DeviceContext.Dispose();
         }
 
         // Free any unmanaged objects here.
