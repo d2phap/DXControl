@@ -61,7 +61,7 @@ public class DemoCanvas : DXCanvas
     }
 
 
-    protected override void OnRender(D2DGraphics g)
+    protected override void OnRender(DXGraphics g)
     {
         var p1 = new Point(0, 0);
         var p2 = new Point(ClientSize.Width, ClientSize.Height);
@@ -98,7 +98,7 @@ public class DemoCanvas : DXCanvas
 
 
         // draw geometry D2D only
-        if (g is D2DGraphics dg)
+        if (g is DXGraphics dg)
         {
             using var geo = dg.GetCombinedRectanglesGeometry(new RectangleF(200, 300, 300, 300),
                 new Rectangle(250, 250, 300, 100), 0, 0, D2D1_COMBINE_MODE.D2D1_COMBINE_MODE_INTERSECT);

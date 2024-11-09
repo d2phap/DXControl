@@ -27,7 +27,7 @@ public class DXCanvas : Control
     protected IComObject<IDWriteFactory5>? _dWriteFactory = null;
     protected IComObject<ID2D1HwndRenderTarget>? _renderTarget;
     protected IComObject<ID2D1DeviceContext6>? _device;
-    protected D2DGraphics? _graphicsD2d;
+    protected DXGraphics? _graphicsD2d;
 
 
     protected bool _useHardwardAcceleration = true;
@@ -71,10 +71,10 @@ public class DXCanvas : Control
 
 
     /// <summary>
-    /// Gets the <see cref='D2DGraphics'/> object used to draw in <see cref="Render"/>.
+    /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="Render"/>.
     /// </summary>
     [Browsable(false)]
-    public D2DGraphics? D2Graphics => _graphicsD2d;
+    public DXGraphics? D2Graphics => _graphicsD2d;
 
 
     /// <summary>
@@ -85,7 +85,7 @@ public class DXCanvas : Control
 
 
     /// <summary>
-    /// Gets, sets the DPI for drawing when using <see cref="D2DGraphics"/>.
+    /// Gets, sets the DPI for drawing when using <see cref="DXGraphics"/>.
     /// </summary>
     [Browsable(false)]
     public float BaseDpi
@@ -171,7 +171,7 @@ public class DXCanvas : Control
 
 
     /// <summary>
-    /// Occurs when the control is being rendered by <see cref="D2DGraphics"/>.
+    /// Occurs when the control is being rendered by <see cref="DXGraphics"/>.
     /// </summary>
     public event EventHandler<RenderEventArgs>? Render;
 
@@ -271,7 +271,7 @@ public class DXCanvas : Control
 
         // create devide and graphics
         _device = _renderTarget.AsComObject<ID2D1DeviceContext6>();
-        _graphicsD2d = new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
+        _graphicsD2d = new DXGraphics(_device, _d2DFactory, _dWriteFactory);
 
 
         OnDeviceCreated(reason);
@@ -308,7 +308,7 @@ public class DXCanvas : Control
     /// <summary>
     /// Triggers <see cref="Render"/> event to paint the control.
     /// </summary>
-    protected virtual void OnRender(D2DGraphics g)
+    protected virtual void OnRender(DXGraphics g)
     {
         if (!IsReady) return;
         Render?.Invoke(this, new(g));
@@ -490,7 +490,7 @@ public class DXCanvas : Control
 
 
     /// <summary>
-    /// <b>Do use</b> <see cref="OnRender(D2DGraphics)"/> if you want to draw on the control.
+    /// <b>Do use</b> <see cref="OnRender(DXGraphics)"/> if you want to draw on the control.
     /// </summary>
     protected override void OnPaint(PaintEventArgs e)
     {

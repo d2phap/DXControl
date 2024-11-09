@@ -18,7 +18,7 @@ public enum DeviceCreatedReason
 
 
 /// <summary>
-/// Interpolation mode for <see cref="D2DGraphics"/>.
+/// Interpolation mode for <see cref="DXGraphics"/>.
 /// </summary>
 public enum InterpolationMode
 {

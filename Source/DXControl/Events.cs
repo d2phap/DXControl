@@ -10,12 +10,12 @@ namespace D2Phap.DXControl;
 /// <summary>
 /// Provides the data for <see cref="DXCanvas.Render"/> event.
 /// </summary>
-public class RenderEventArgs(D2DGraphics g) : EventArgs
+public class RenderEventArgs(DXGraphics g) : EventArgs
 {
     /// <summary>
-    /// Gets the <see cref='D2DGraphics'/> object used to draw.
+    /// Gets the <see cref='DXGraphics'/> object used to draw.
     /// </summary>
-    public D2DGraphics Graphics { get; init; } = g;
+    public DXGraphics Graphics { get; init; } = g;
 }
 
 

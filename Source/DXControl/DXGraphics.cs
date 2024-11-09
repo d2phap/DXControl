@@ -12,7 +12,7 @@ namespace D2Phap.DXControl;
 /// <summary>
 /// Encapsulates a Direct2D drawing surface.
 /// </summary>
-public class D2DGraphics : IDisposable
+public class DXGraphics : IDisposable
 {
     #region IDisposable Disposing
 
@@ -38,7 +38,7 @@ public class D2DGraphics : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~D2DGraphics()
+    ~DXGraphics()
     {
         Dispose(false);
     }
@@ -99,10 +99,10 @@ public class D2DGraphics : IDisposable
 
 
     /// <summary>
-    /// Initialize new instance of <see cref="D2DGraphics"/>.
+    /// Initialize new instance of <see cref="DXGraphics"/>.
     /// </summary>
     /// <exception cref="ArgumentNullException"></exception>
-    public D2DGraphics(IComObject<ID2D1DeviceContext6>? dc, IComObject<ID2D1Factory1>? d2dF, IComObject<IDWriteFactory5>? wf)
+    public DXGraphics(IComObject<ID2D1DeviceContext6>? dc, IComObject<ID2D1Factory1>? d2dF, IComObject<IDWriteFactory5>? wf)
     {
         if (dc == null)
         {

@@ -31,12 +31,12 @@ Install-Package D2Phap.DXControl
 ## Example
 
 
-<img src="https://user-images.githubusercontent.com/3154213/185740243-6a3cb1b6-13e6-4888-8c57-ce8ac9998c6e.png" width="500" />
+<img src="https://github.com/user-attachments/assets/837414d9-b342-487b-99c9-056b8a24205d" width="500" />
 
 Draws a rectangle, then moves it to the right side.
 
 ```cs
-using D2Phap;
+using D2Phap.DXControl;
 
 // create a WinForms custom control that extends from DXCanvas
 public class DemoCanvas : DXCanvas
@@ -49,7 +49,7 @@ public class DemoCanvas : DXCanvas
         UseHardwareAcceleration = true;
     }
 
-    protected override void OnRender(D2DGraphics g)
+    protected override void OnRender(DXGraphics g)
     {
         // draw a yellow rectangle with green border
         g.FillRectangle(rectText, Color.FromArgb(100, Yellow));
@@ -75,7 +75,6 @@ See Demo project for full details.
 - [GitHub sponsor](https://github.com/sponsors/d2phap)
 - [Patreon](https://www.patreon.com/d2phap)
 - [PayPal](https://www.paypal.me/d2phap)
-- [Wire Transfers](https://donorbox.org/imageglass)
 
 Thanks for your gratitude and finance help!
 
