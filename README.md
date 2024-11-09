@@ -1,6 +1,5 @@
 # D2Phap.DXControl
-
-- A WinForms hybrid control that supports both Direct2D and GDI+ drawing thanks to [WicNet](https://github.com/smourier/WicNet).
+- A WinForms control that supports drawing with Direct2D thanks to [WicNet](https://github.com/smourier/WicNet).
 - This control has been used in [ImageGlass](https://github.com/d2phap/ImageGlass) software since version 9.0.
 
 ![Nuget](https://img.shields.io/nuget/dt/D2Phap.DXControl?color=%2300a8d6&logo=nuget)
@@ -16,8 +15,8 @@
 - High performance drawing using Direct2D.
 - Names and types are exactly the same as the native concepts of Direct2D (interfaces, enums, structures, constants, methods, arguments, guids, etc...). So you can read the official documentation, use existing C/C++ samples, and start coding with .NET right away.
 - All native COM interfaces are generated as .NET (COM) interfaces, this makes .NET programming easier, but they are not strictly needed.
-- Option to draw by GDI+.
-- Supports animation drawing for both Direct2D and GDI+.
+- Option to use Software or Hardware render target
+- Supports animation drawing with Direct2D.
 
 ## Requirements:
 - .NET 6.0, 7.0, 8.0
@@ -39,26 +38,23 @@ Draws a rectangle, then moves it to the right side.
 ```cs
 using D2Phap;
 
-// create a WinForms custom control that extends from DXControl
-public class DXCanvas : DXControl
+// create a WinForms custom control that extends from DXCanvas
+public class DemoCanvas : DXCanvas
 {
     private RectangleF animatableRectangle = new(100, 100, 400, 200);
 
-    public DXCanvas()
+    public DemoCanvas()
     {
         EnableAnimation = true;
-
-        // use Direct2D
         UseHardwareAcceleration = true;
     }
 
-    protected override void OnRender(IGraphics g)
+    protected override void OnRender(D2DGraphics g)
     {
         // draw a yellow rectangle with green border
         g.FillRectangle(rectText, Color.FromArgb(100, Yellow));
         g.DrawRectangle(rectText, Color.Green);
     }
-
 
     // Update frame logics for animation
     protected override void OnFrame(FrameEventArgs e)

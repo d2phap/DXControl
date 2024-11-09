@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            canvas = new DXCanvas();
+            canvas = new DemoCanvas();
             chkD2D = new CheckBox();
             chkAnimation = new CheckBox();
             SuspendLayout();
@@ -39,7 +39,6 @@
             canvas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             canvas.BackColor = Color.FromArgb(128, 128, 255);
             canvas.BaseDpi = 96F;
-            canvas.Bitmap = null;
             canvas.CheckFPS = true;
             canvas.EnableAnimation = true;
             canvas.Location = new Point(20, 90);
@@ -62,7 +61,7 @@
             chkD2D.Name = "chkD2D";
             chkD2D.Size = new Size(372, 49);
             chkD2D.TabIndex = 1;
-            chkD2D.Text = "Use Direct2D graphics";
+            chkD2D.Text = "Use Hardware acceleration";
             chkD2D.UseVisualStyleBackColor = true;
             chkD2D.CheckedChanged += chkD2D_CheckedChanged;
             // 
@@ -99,7 +98,7 @@
 
         #endregion
 
-        private DXCanvas canvas;
+        private DemoCanvas canvas;
         private CheckBox chkD2D;
         private CheckBox chkAnimation;
     }
