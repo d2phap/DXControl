@@ -28,7 +28,6 @@ public class DXControl : Control
     protected IComObject<ID2D1HwndRenderTarget>? _renderTarget;
     protected IComObject<ID2D1DeviceContext6>? _device;
     protected D2DGraphics? _graphicsD2d;
-    protected GdipGraphics? _graphicsGdi;
 
 
     protected bool _useHardwardAcceleration = true;
@@ -68,21 +67,7 @@ public class DXControl : Control
     /// Gets Direct2D device context.
     /// </summary>
     [Browsable(false)]
-    public IComObject<ID2D1DeviceContext6> Device
-    {
-        get
-        {
-            if (_renderTarget == null || _device == null)
-            {
-                DisposeDevice();
-                CreateDevice();
-            }
-
-#pragma warning disable CS8603 // Possible null reference return.
-            return _device;
-#pragma warning restore CS8603 // Possible null reference return.
-        }
-    }
+    public IComObject<ID2D1DeviceContext6> Device => _device!;
 
 
     /// <summary>
@@ -127,8 +112,19 @@ public class DXControl : Control
         get => _useHardwardAcceleration;
         set
         {
+            var enableAnimationOldValue = EnableAnimation;
+            var hasChange = _useHardwardAcceleration != value;
+
             _useHardwardAcceleration = value;
-            DoubleBuffered = !_useHardwardAcceleration;
+
+            // re-create device
+            if (hasChange)
+            {
+                EnableAnimation = false;
+                CreateDevice(DeviceCreatedReason.UseHardwareAccelerationChanged);
+
+                EnableAnimation = enableAnimationOldValue;
+            }
         }
     }
 
@@ -169,6 +165,12 @@ public class DXControl : Control
 
 
     /// <summary>
+    /// Occurs when the Device is created.
+    /// </summary>
+    public event EventHandler<DeviceCreatedEventArgs>? DeviceCreated;
+
+
+    /// <summary>
     /// Occurs when the control is being rendered by <see cref="IGraphics"/>.
     /// </summary>
     public event EventHandler<RenderEventArgs>? Render;
@@ -178,7 +180,6 @@ public class DXControl : Control
     /// Occurs when the animation frame logics need to update.
     /// </summary>
     public event EventHandler<FrameEventArgs>? Frame;
-
 
     #endregion
 
@@ -192,6 +193,160 @@ public class DXControl : Control
     }
 
 
+    // New / Virtual functions
+    #region New / Virtual functions
+
+    /// <summary>
+    /// Initializes value for <see cref="Direct2DFactory"/> and <see cref="DirectWriteFactory"/>.
+    /// </summary>
+    protected virtual void CreateFactories()
+    {
+        _d2DFactory = D2D1Functions.D2D1CreateFactory<ID2D1Factory1>(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
+
+        _dWriteFactory = DWriteFunctions.DWriteCreateFactory<IDWriteFactory5>(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+    }
+
+
+    /// <summary>
+    /// Disposes <see cref="Direct2DFactory"/> and <see cref="DirectWriteFactory"/>.
+    /// </summary>
+    protected virtual void DisposeFactories()
+    {
+        _d2DFactory?.Dispose();
+        _d2DFactory = null;
+
+        _dWriteFactory?.Dispose();
+        _dWriteFactory = null;
+    }
+
+
+    /// <summary>
+    /// Initializes value for <see cref="Device"/>, <see cref="RenderTarget"/> and <see cref="D2Graphics"/>.
+    /// </summary>
+    protected virtual void CreateDevice(DeviceCreatedReason reason)
+    {
+        // dispose the current device
+        DisposeDevice();
+
+        if (_d2DFactory == null)
+        {
+            throw new NullReferenceException($"{nameof(Direct2DFactory)} is null");
+        }
+        if (_dWriteFactory == null)
+        {
+            throw new NullReferenceException($"{nameof(DirectWriteFactory)} is null");
+        }
+
+
+        var rtType = UseHardwareAcceleration
+                ? D2D1_RENDER_TARGET_TYPE.D2D1_RENDER_TARGET_TYPE_DEFAULT
+                : D2D1_RENDER_TARGET_TYPE.D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+        var renderTargetProps = new D2D1_RENDER_TARGET_PROPERTIES()
+        {
+            dpiX = _dpi,
+            dpiY = _dpi,
+            type = rtType,
+            minLevel = D2D1_FEATURE_LEVEL.D2D1_FEATURE_LEVEL_DEFAULT,
+            pixelFormat = new D2D1_PIXEL_FORMAT()
+            {
+                alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
+                format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+            },
+        };
+
+        var hwndRenderTargetProps = new D2D1_HWND_RENDER_TARGET_PROPERTIES()
+        {
+            hwnd = Handle,
+            pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height),
+            presentOptions = D2D1_PRESENT_OPTIONS.D2D1_PRESENT_OPTIONS_IMMEDIATELY,
+        };
+
+
+        // create new render target
+        _renderTarget = _d2DFactory.CreateHwndRenderTarget(hwndRenderTargetProps, renderTargetProps);
+        _renderTarget.Object.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+        _renderTarget.Object.SetDpi(BaseDpi, BaseDpi);
+        _renderTarget.Resize(new((uint)ClientSize.Width, (uint)ClientSize.Height));
+
+
+        // create devide and graphics
+        _device = _renderTarget.AsComObject<ID2D1DeviceContext6>();
+        _graphicsD2d = new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
+
+
+        OnDeviceCreated(reason);
+    }
+
+
+    /// <summary>
+    /// Disposes <see cref="Device"/> and <see cref="RenderTarget"/> objects.
+    /// </summary>
+    protected virtual void DisposeDevice()
+    {
+        _graphicsD2d?.Dispose();
+        _graphicsD2d = null;
+
+        _device?.Dispose();
+        _device = null;
+
+        _renderTarget?.Dispose();
+        _renderTarget = null;
+
+        GC.Collect();
+    }
+
+
+    /// <summary>
+    /// Triggers <see cref="DeviceCreated"/> event.
+    /// </summary>
+    protected virtual void OnDeviceCreated(DeviceCreatedReason reason)
+    {
+        DeviceCreated?.Invoke(this, new DeviceCreatedEventArgs(reason));
+    }
+
+
+    /// <summary>
+    /// Triggers <see cref="Render"/> event to paint the control.
+    /// </summary>
+    protected virtual void OnRender(IGraphics g)
+    {
+        if (!IsReady) return;
+        Render?.Invoke(this, new(g));
+    }
+
+
+    /// <summary>
+    /// Triggers <see cref="Frame"/> event to process animation logic when frame changes.
+    /// </summary>
+    protected virtual void OnFrame(FrameEventArgs e)
+    {
+        if (!IsReady) return;
+
+        Frame?.Invoke(this, e);
+    }
+
+
+    /// <summary>
+    /// Triggers <see cref="Loaded"/> event when the control is ready.
+    /// </summary>
+    protected virtual void OnLoaded()
+    {
+        Loaded?.Invoke(this, new());
+    }
+
+
+    /// <summary>
+    /// Invalidates client retangle of the control and causes a paint message to the control. This does not apply to child controls.
+    /// </summary>
+    public new void Invalidate()
+    {
+        Invalidate(false);
+    }
+
+    #endregion
+
+
+
     // Override functions
     #region Override functions
 
@@ -200,12 +355,19 @@ public class DXControl : Control
         base.CreateHandle();
         if (DesignMode) return;
 
+        // disable GDI+
         DoubleBuffered = false;
 
+        // create factories
+        if (_d2DFactory == null || _dWriteFactory == null)
+        {
+            CreateFactories();
+        }
+
+        // create device
         if (_renderTarget == null || _device == null)
         {
-            DisposeDevice();
-            CreateDevice();
+            CreateDevice(DeviceCreatedReason.FirstTime);
         }
 
 
@@ -219,6 +381,7 @@ public class DXControl : Control
         base.DestroyHandle();
 
         DisposeDevice();
+        DisposeFactories();
     }
 
 
@@ -249,16 +412,21 @@ public class DXControl : Control
                 if (_firstPaintBackground)
                 {
                     _firstPaintBackground = false;
-                    if (!_useHardwardAcceleration)
-                    {
-                        base.WndProc(ref m);
-                    }
-                    else
-                    {
-                        _device?.BeginDraw();
-                        _device?.Clear(BackColor.ToD3DCOLORVALUE());
-                        _device?.EndDraw();
-                    }
+
+                    _device?.BeginDraw();
+                    _device?.Clear(BackColor.ToD3DCOLORVALUE());
+                    _device?.EndDraw();
+
+                    //if (!_useHardwardAcceleration)
+                    //{
+                    //    base.WndProc(ref m);
+                    //}
+                    //else
+                    //{
+                    //    _device?.BeginDraw();
+                    //    _device?.Clear(BackColor.ToD3DCOLORVALUE());
+                    //    _device?.EndDraw();
+                    //}
                 }
                 break;
 
@@ -270,6 +438,7 @@ public class DXControl : Control
 
             case WM_DESTROY:
                 DisposeDevice();
+                DisposeFactories();
 
                 base.WndProc(ref m);
                 break;
@@ -314,14 +483,9 @@ public class DXControl : Control
 
     protected override void OnPaintBackground(PaintEventArgs e)
     {
-        if (!_useHardwardAcceleration)
-        {
-            base.OnPaintBackground(e);
-        }
-        else
-        {
-            // handled in OnPaint event
-        }
+        // handled in OnPaint event
+
+        // base.OnPaintBackground(e);
     }
 
 
@@ -343,34 +507,13 @@ public class DXControl : Control
         }
 
 
-        // use hardware acceleration
-        if (UseHardwareAcceleration && _device != null)
+        // draw
+        if (_device != null && _graphicsD2d != null)
         {
-            DoubleBuffered = false;
-
-            _graphicsD2d ??= new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
-
             _device.BeginDraw();
             _device.Clear(BackColor.ToD3DCOLORVALUE());
             OnRender(_graphicsD2d);
             _device.EndDraw();
-        }
-
-        // use GDI+ graphics
-        else
-        {
-            DoubleBuffered = true;
-
-            if (_graphicsGdi == null)
-            {
-                _graphicsGdi = new GdipGraphics(e.Graphics);
-            }
-            else
-            {
-                _graphicsGdi.Graphics = e.Graphics;
-            }
-
-            OnRender(_graphicsGdi);
         }
 
 
@@ -393,49 +536,6 @@ public class DXControl : Control
 
     #endregion // Override functions
 
-
-    // New / Virtual functions
-    #region New / Virtual functions
-
-    /// <summary>
-    /// Triggers <see cref="Render"/> event to paint the control.
-    /// </summary>
-    protected virtual void OnRender(IGraphics g)
-    {
-        if (!IsReady) return;
-        Render?.Invoke(this, new(g));
-    }
-
-
-    /// <summary>
-    /// Triggers <see cref="Frame"/> event to process animation logic when frame changes.
-    /// </summary>
-    protected virtual void OnFrame(FrameEventArgs e)
-    {
-        if (!IsReady) return;
-
-        Frame?.Invoke(this, e);
-    }
-
-
-    /// <summary>
-    /// Triggers <see cref="Loaded"/> event when the control is ready.
-    /// </summary>
-    protected virtual void OnLoaded()
-    {
-        Loaded?.Invoke(this, new());
-    }
-
-
-    /// <summary>
-    /// Invalidates client retangle of the control and causes a paint message to the control. This does not apply to child controls.
-    /// </summary>
-    public new void Invalidate()
-    {
-        Invalidate(false);
-    }
-
-    #endregion
 
 
     // Private functions
@@ -466,73 +566,5 @@ public class DXControl : Control
 
     #endregion // Private functions
 
-
-    // Public functions
-    #region Public functions
-
-    /// <summary>
-    /// Initializes value for <see cref="Device"/>, <see cref="RenderTarget"/> and <see cref="D2Graphics"/>.
-    /// </summary>
-    public void CreateDevice()
-    {
-        _d2DFactory = D2D1Functions.D2D1CreateFactory<ID2D1Factory1>(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED);
-        _dWriteFactory = DWriteFunctions.DWriteCreateFactory<IDWriteFactory5>(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
-
-        var renderTargetProps = new D2D1_RENDER_TARGET_PROPERTIES()
-        {
-            dpiX = _dpi,
-            dpiY = _dpi,
-            type = D2D1_RENDER_TARGET_TYPE.D2D1_RENDER_TARGET_TYPE_DEFAULT,
-            usage = D2D1_RENDER_TARGET_USAGE.D2D1_RENDER_TARGET_USAGE_NONE,
-            minLevel = D2D1_FEATURE_LEVEL.D2D1_FEATURE_LEVEL_DEFAULT,
-            pixelFormat = new D2D1_PIXEL_FORMAT()
-            {
-                alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_PREMULTIPLIED,
-                format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-            },
-        };
-
-        var hwndRenderTargetProps = new D2D1_HWND_RENDER_TARGET_PROPERTIES()
-        {
-            hwnd = Handle,
-            pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height),
-            presentOptions = D2D1_PRESENT_OPTIONS.D2D1_PRESENT_OPTIONS_IMMEDIATELY,
-        };
-
-        _renderTarget = _d2DFactory.CreateHwndRenderTarget(hwndRenderTargetProps, renderTargetProps);
-
-        _renderTarget.Object.SetAntialiasMode(D2D1_ANTIALIAS_MODE.D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-        _renderTarget.Object.SetDpi(BaseDpi, BaseDpi);
-        _renderTarget.Resize(new((uint)ClientSize.Width, (uint)ClientSize.Height));
-
-        _device = _renderTarget.AsComObject<ID2D1DeviceContext6>();
-        _graphicsD2d = new D2DGraphics(_device, _d2DFactory, _dWriteFactory);
-    }
-
-
-    /// <summary>
-    /// Dispose <see cref="Device"/> and <see cref="RenderTarget"/> objects.
-    /// </summary>
-    public void DisposeDevice()
-    {
-        _graphicsD2d?.Dispose();
-        _graphicsD2d = null;
-
-        _device?.Dispose();
-        _device = null;
-
-        _renderTarget?.Dispose();
-        _renderTarget = null;
-
-        _d2DFactory?.Dispose();
-        _d2DFactory = null;
-
-        _dWriteFactory?.Dispose();
-        _dWriteFactory = null;
-
-        GC.Collect();
-    }
-
-    #endregion // Public functions
 
 }
