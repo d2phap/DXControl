@@ -7,13 +7,13 @@ using DirectN;
 using System.ComponentModel;
 using WicNet.Utilities;
 
-namespace D2Phap;
+namespace D2Phap.DXControl;
 
 
 /// <summary>
 /// Defines the base class for hybrid control with Direct2D and GDI+ graphics support.
 /// </summary>
-public class DXControl : Control
+public class DXCanvas : Control
 {
     // Internal properties
     #region Internal properties
@@ -171,7 +171,7 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// Occurs when the control is being rendered by <see cref="IGraphics"/>.
+    /// Occurs when the control is being rendered by <see cref="D2DGraphics"/>.
     /// </summary>
     public event EventHandler<RenderEventArgs>? Render;
 
@@ -187,7 +187,7 @@ public class DXControl : Control
     /// <summary>
     /// Initializes new instance of <see cref="DXControl"/>.
     /// </summary>
-    public DXControl()
+    public DXCanvas()
     {
         SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
     }
@@ -308,7 +308,7 @@ public class DXControl : Control
     /// <summary>
     /// Triggers <see cref="Render"/> event to paint the control.
     /// </summary>
-    protected virtual void OnRender(IGraphics g)
+    protected virtual void OnRender(D2DGraphics g)
     {
         if (!IsReady) return;
         Render?.Invoke(this, new(g));
@@ -490,7 +490,7 @@ public class DXControl : Control
 
 
     /// <summary>
-    /// <b>Do use</b> <see cref="OnRender(IGraphics)"/> if you want to draw on the control.
+    /// <b>Do use</b> <see cref="OnRender(D2DGraphics)"/> if you want to draw on the control.
     /// </summary>
     protected override void OnPaint(PaintEventArgs e)
     {

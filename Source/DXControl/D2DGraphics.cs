@@ -6,13 +6,13 @@ Project & license info: https://github.com/d2phap/DXControl
 using DirectN;
 using System.Runtime.InteropServices;
 
-namespace D2Phap;
+namespace D2Phap.DXControl;
 
 
 /// <summary>
 /// Encapsulates a Direct2D drawing surface.
 /// </summary>
-public class D2DGraphics : IGraphics
+public class D2DGraphics : IDisposable
 {
     #region IDisposable Disposing
 
@@ -129,9 +129,15 @@ public class D2DGraphics : IGraphics
 
     #region Draw bitmap
 
-    public void DrawBitmap(object? bitmap, RectangleF? destRect = null, RectangleF? srcRect = null, InterpolationMode interpolation = InterpolationMode.NearestNeighbor, float opacity = 1)
+    /// <summary>
+    /// Draws the specified bitmap after scaling it to the size of the specified rectangle.
+    /// </summary>
+    public void DrawBitmap(IComObject<ID2D1Bitmap1>? bitmap,
+        RectangleF? destRect = null, RectangleF? srcRect = null,
+        InterpolationMode interpolation = InterpolationMode.NearestNeighbor,
+        float opacity = 1)
     {
-        if (bitmap is not ComObject<ID2D1Bitmap1> bmp) return;
+        if (bitmap is not IComObject<ID2D1Bitmap1> bmp) return;
 
         D2D_RECT_F? sourceRect = null;
         D2D_RECT_F? destinationRect = null;
@@ -168,6 +174,9 @@ public class D2DGraphics : IGraphics
 
     #region Draw/Fill ellipse
 
+    /// <summary>
+    /// Draws the outline and paints the interior of the specified ellipse.
+    /// </summary>
     public void DrawEllipse(float x, float y, float radius, Color borderColor, Color? fillColor, float strokeWidth = 1)
     {
         var rect = new RectangleF(x - radius, y - radius, radius * 2, radius * 2);
@@ -176,12 +185,18 @@ public class D2DGraphics : IGraphics
     }
 
 
+    /// <summary>
+    /// Draws the outline and paints the interior of the specified ellipse.
+    /// </summary>
     public void DrawEllipse(RectangleF rect, Color borderColor, Color? fillColor, float strokeWidth = 1)
     {
         DrawEllipse(rect.X, rect.Y, rect.Width, rect.Height, borderColor, fillColor, strokeWidth);
     }
 
 
+    /// <summary>
+    /// Draws the outline and paints the interior of the specified ellipse.
+    /// </summary>
     public void DrawEllipse(float x, float y, float width, float height, Color borderColor, Color? fillColor, float strokeWidth = 1)
     {
         var ellipse = new D2D1_ELLIPSE(x + width / 2, y + height / 2, width / 2, height / 2);
@@ -210,37 +225,19 @@ public class D2DGraphics : IGraphics
     #endregion // Draw/Fill ellipse
 
 
-    #region Draw lines
-
-    public void DrawLine(float x1, float y1, float x2, float y2, Color c, float strokeWidth = 1)
-    {
-        DrawLine(new PointF(x1, y1), new PointF(x2, y2), c, strokeWidth);
-    }
-
-    public void DrawLine(PointF p1, PointF p2, Color c, float strokeWidth = 1)
-    {
-        var point1 = new D2D_POINT_2F(p1.X, p1.Y);
-        var point2 = new D2D_POINT_2F(p2.X, p2.Y);
-        var color = DXHelper.FromColor(c);
-
-        // create solid brush
-        using var brush = DeviceContext.CreateSolidColorBrush(color);
-
-        // start drawing the line
-        DeviceContext.DrawLine(point1, point2, brush, strokeWidth);
-    }
-
-    #endregion // Draw lines
-
-
     #region Draw/Fill Rectangle
 
+    /// <summary>
+    /// Draws the outline and paints the interior of the specified rectangle.
+    /// </summary>
     public void DrawRectangle(float x, float y, float width, float height, float radius, Color borderColor, Color? fillColor = null, float strokeWidth = 1)
     {
         DrawRectangle(new RectangleF(x, y, width, height), radius, borderColor, fillColor, strokeWidth);
     }
 
-
+    /// <summary>
+    /// Draws the outline and paints the interior of the specified rectangle.
+    /// </summary>
     public void DrawRectangle(RectangleF rect, float radius, Color borderColor, Color? fillColor = null, float strokeWidth = 1)
     {
         // create rounded rectangle
@@ -276,8 +273,40 @@ public class D2DGraphics : IGraphics
     #endregion // Draw/Fill Rectangle
 
 
+    #region Draw lines
+
+    /// <summary>
+    /// Draws a line between the specified points using the specified stroke style.
+    /// </summary>
+    public void DrawLine(float x1, float y1, float x2, float y2, Color c, float strokeWidth = 1)
+    {
+        DrawLine(new PointF(x1, y1), new PointF(x2, y2), c, strokeWidth);
+    }
+
+    /// <summary>
+    /// Draws a line between the specified points using the specified stroke style.
+    /// </summary>
+    public void DrawLine(PointF p1, PointF p2, Color c, float strokeWidth = 1)
+    {
+        var point1 = new D2D_POINT_2F(p1.X, p1.Y);
+        var point2 = new D2D_POINT_2F(p2.X, p2.Y);
+        var color = DXHelper.FromColor(c);
+
+        // create solid brush
+        using var brush = DeviceContext.CreateSolidColorBrush(color);
+
+        // start drawing the line
+        DeviceContext.DrawLine(point1, point2, brush, strokeWidth);
+    }
+
+    #endregion // Draw lines
+
+
     #region Draw / Measure text
 
+    /// <summary>
+    /// Draws the specified text using the format information provided.
+    /// </summary>
     public void DrawText(string text, string fontFamilyName, float fontSize, float x, float y, Color c, float? textDpi = null, StringAlignment hAlign = StringAlignment.Near, StringAlignment vAlign = StringAlignment.Near, bool isBold = false, bool isItalic = false)
     {
         var rect = new RectangleF(x, y, int.MaxValue, int.MaxValue);
@@ -285,7 +314,9 @@ public class D2DGraphics : IGraphics
         DrawText(text, fontFamilyName, fontSize, rect, c, textDpi, hAlign, vAlign, isBold, isItalic);
     }
 
-
+    /// <summary>
+    /// Draws the specified text using the format information provided.
+    /// </summary>
     public void DrawText(string text, string fontFamilyName, float fontSize, RectangleF rect, Color c, float? textDpi = null, StringAlignment hAlign = StringAlignment.Near, StringAlignment vAlign = StringAlignment.Near, bool isBold = false, bool isItalic = false)
     {
         // backup base dpi
@@ -350,7 +381,9 @@ public class D2DGraphics : IGraphics
         }
     }
 
-
+    /// <summary>
+    /// Measure text.
+    /// </summary>
     public SizeF MeasureText(string text, string fontFamilyName, float fontSize, float maxWidth = float.MaxValue, float maxHeight = float.MaxValue, float textDpi = 96, bool isBold = false, bool isItalic = false)
     {
         var size = new SizeF(maxWidth, maxHeight);
@@ -358,7 +391,9 @@ public class D2DGraphics : IGraphics
         return MeasureText(text, fontFamilyName, fontSize, size, textDpi, isBold, isItalic);
     }
 
-
+    /// <summary>
+    /// Measure text.
+    /// </summary>
     public SizeF MeasureText(string text, string fontFamilyName, float fontSize, SizeF size, float textDpi = 96, bool isBold = false, bool isItalic = false)
     {
         // fix DPI
@@ -389,28 +424,6 @@ public class D2DGraphics : IGraphics
 
     #endregion // Draw / Measure text
 
-
-    #region Others
-
-    public void Flush()
-    {
-        DeviceContext.Object.Flush(IntPtr.Zero, IntPtr.Zero);
-    }
-
-
-    public void ClearBackground(Color color)
-    {
-        var d3Color = DXHelper.FromColor(color);
-
-        DeviceContext.Clear(d3Color);
-    }
-
-
-    #endregion // Others
-
-
-    // D2DGraphics-only methods
-    #region D2DGraphics-only methods
 
     #region Draw / Fill Geometry
 
@@ -524,6 +537,29 @@ public class D2DGraphics : IGraphics
     #endregion // Draw / Fill Geometry
 
 
-    #endregion
+    #region Others
+
+    /// <summary>
+    /// Executes all pending drawing commands.
+    /// </summary>
+    public void Flush()
+    {
+        DeviceContext.Object.Flush(IntPtr.Zero, IntPtr.Zero);
+    }
+
+
+    /// <summary>
+    /// Clears the drawing area to the specified color.
+    /// </summary>
+    public void ClearBackground(Color color)
+    {
+        var d3Color = DXHelper.FromColor(color);
+
+        DeviceContext.Clear(d3Color);
+    }
+
+
+    #endregion // Others
+
 
 }
