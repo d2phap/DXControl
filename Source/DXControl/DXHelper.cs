@@ -6,7 +6,7 @@ Project & license info: https://github.com/d2phap/DXControl
 using DirectN;
 using WicNet;
 
-namespace D2Phap;
+namespace D2Phap.DXControl;
 
 public static class DXHelper
 {

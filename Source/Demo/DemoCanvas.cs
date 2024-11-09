@@ -3,7 +3,6 @@ MIT License
 Copyright (C) 2022 - 2024 DUONG DIEU PHAP
 Project & license info: https://github.com/d2phap/DXControl
 */
-using D2Phap;
 using D2Phap.DXControl;
 using DirectN;
 using WicNet;
