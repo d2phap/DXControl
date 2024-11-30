@@ -14,6 +14,7 @@ public enum DeviceCreatedReason
 {
     FirstTime,
     UseHardwareAccelerationChanged,
+    DeviceLost,
 }
 
 

@@ -36,6 +36,8 @@ public class DXCanvas : Control
     protected int _lastFps = 0;
     protected DateTime _lastFpsUpdate = DateTime.UtcNow;
 
+    const uint D2DERR_RECREATE_TARGET = 0x8899000C;
+
     #endregion // Internal properties
 
 
@@ -513,7 +515,23 @@ public class DXCanvas : Control
             _device.BeginDraw();
             _device.Clear(BackColor.ToD3DCOLORVALUE());
             OnRender(_graphicsD2d);
-            _device.EndDraw();
+
+            try
+            {
+                _device.EndDraw();
+            }
+            catch (Win32Exception ex)
+            {
+                // handle device lost
+                if (ex.ErrorCode == unchecked((int)D2DERR_RECREATE_TARGET))
+                {
+                    CreateDevice(DeviceCreatedReason.DeviceLost);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
 
