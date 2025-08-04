@@ -518,7 +518,7 @@ public class DXCanvas : Control
 
             try
             {
-                _device.EndDraw();
+                _device?.Object?.EndDraw(IntPtr.Zero, IntPtr.Zero);
             }
             catch (Win32Exception ex)
             {
