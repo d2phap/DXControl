@@ -48,6 +48,7 @@ public class DXCanvas : Control
     /// Gets Direct2D factory.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public IComObject<ID2D1Factory1>? Direct2DFactory => _d2DFactory;
 
 
@@ -55,6 +56,7 @@ public class DXCanvas : Control
     /// Gets DirectWrite factory.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public IComObject<IDWriteFactory5>? DirectWriteFactory => _dWriteFactory;
 
 
@@ -62,6 +64,7 @@ public class DXCanvas : Control
     /// Gets render target for this control.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public IComObject<ID2D1HwndRenderTarget>? RenderTarget => _renderTarget;
 
 
@@ -76,6 +79,7 @@ public class DXCanvas : Control
     /// Gets the <see cref='DXGraphics'/> object used to draw in <see cref="Render"/>.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public DXGraphics? D2Graphics => _graphicsD2d;
 
 
@@ -83,6 +87,7 @@ public class DXCanvas : Control
     /// Gets the value indicates if control is fully loaded
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool IsReady => !DesignMode && Created;
 
 
@@ -90,6 +95,7 @@ public class DXCanvas : Control
     /// Gets, sets the DPI for drawing when using <see cref="DXGraphics"/>.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public float BaseDpi
     {
         get => _dpi;
@@ -135,6 +141,7 @@ public class DXCanvas : Control
     /// Request to update logics of the current frame in the <see cref="OnFrame"/> event.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool RequestUpdateFrame { get; set; } = false;
 
 
@@ -150,6 +157,7 @@ public class DXCanvas : Control
     /// Enable FPS measurement.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool CheckFPS { get; set; } = false;
 
 
@@ -157,6 +165,7 @@ public class DXCanvas : Control
     /// Gets FPS info when the <see cref="CheckFPS"/> is set to <c>true</c>.
     /// </summary>
     [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int FPS => _lastFps;
 
 

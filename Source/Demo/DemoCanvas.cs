@@ -5,6 +5,7 @@ Project & license info: https://github.com/d2phap/DXControl
 */
 using D2Phap.DXControl;
 using DirectN;
+using System.ComponentModel;
 using WicNet;
 
 namespace Demo;
@@ -16,6 +17,7 @@ public class DemoCanvas : DXCanvas
     private WicBitmapSource? _wicSrc;
 
 
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public WicBitmapSource? Image
     {
         set
