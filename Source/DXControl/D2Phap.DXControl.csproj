@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -13,7 +13,7 @@
     <Description>
         A WinForms control that supports drawing with Direct2D thanks to WicNet. This control has being used in https://github.com/d2phap/ImageGlass since version 9.
     </Description>
-    <Copyright>Copyright (C) 2022 - 2025 Duong Dieu Phap. All rights reserved.</Copyright>
+    <Copyright>Copyright (C) 2022 - 2026 Duong Dieu Phap. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/d2phap/DXControl</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/d2phap/DXControl</RepositoryUrl>
@@ -23,7 +23,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReleaseNotes>See release notes here: https://github.com/d2phap/DXControl/releases</PackageReleaseNotes>
     <Authors>Duong Dieu Phap</Authors>
-    <VersionPrefix>4.2.0</VersionPrefix>
+    <VersionPrefix>4.3.0</VersionPrefix>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -77,8 +77,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DirectNStandard" Version="1.17.3" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+    <PackageReference Include="DirectNStandard" Version="1.18.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.203">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

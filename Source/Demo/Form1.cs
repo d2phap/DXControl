@@ -58,29 +58,30 @@ public partial class Form1 : Form
         return wicSrc;
     }
 
-    private void canvas_DragDrop(object sender, DragEventArgs e)
+    private void Canvas_DragDrop(object sender, DragEventArgs e)
     {
         // Drag file from DESKTOP to APP
         if (e.Data is null || !e.Data.GetDataPresent(DataFormats.FileDrop))
             return;
 
-        var filePaths = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-
-        if (filePaths.Length > 0)
+        if (e.Data.TryGetData<string[]>(DataFormats.FileDrop, false, out var filePaths))
         {
-            Text = filePaths[0];
+            if (filePaths.Length > 0)
+            {
+                Text = filePaths[0];
 
-            using var imgM = new MagickImage(Text);
-            canvas.Image = FromBitmapSource(imgM.ToBitmapSource());
+                using var imgM = new MagickImage(Text);
+                canvas.Image = FromBitmapSource(imgM.ToBitmapSource());
+            }
         }
     }
 
-    private void canvas_DragOver(object sender, DragEventArgs e)
+    private void Canvas_DragOver(object sender, DragEventArgs e)
     {
         e.Effect = DragDropEffects.Copy;
     }
 
-    private void chkD2D_CheckedChanged(object sender, EventArgs e)
+    private void ChkD2D_CheckedChanged(object sender, EventArgs e)
     {
         canvas.UseHardwareAcceleration = chkD2D.Checked;
     }

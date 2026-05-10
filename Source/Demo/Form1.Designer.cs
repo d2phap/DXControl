@@ -48,8 +48,8 @@
             canvas.Size = new Size(2114, 1293);
             canvas.TabIndex = 0;
             canvas.Text = "dxCanvas1";
-            canvas.DragDrop += canvas_DragDrop;
-            canvas.DragOver += canvas_DragOver;
+            canvas.DragDrop += Canvas_DragDrop;
+            canvas.DragOver += Canvas_DragOver;
             // 
             // chkD2D
             // 
@@ -63,7 +63,7 @@
             chkD2D.TabIndex = 1;
             chkD2D.Text = "Use Hardware acceleration";
             chkD2D.UseVisualStyleBackColor = true;
-            chkD2D.CheckedChanged += chkD2D_CheckedChanged;
+            chkD2D.CheckedChanged += ChkD2D_CheckedChanged;
             // 
             // chkAnimation
             // 

@@ -1,6 +1,6 @@
 ﻿# D2Phap.DXControl
 - A WinForms control that supports drawing with Direct2D thanks to [WicNet](https://github.com/smourier/WicNet).
-- This control has been used in [ImageGlass](https://github.com/d2phap/ImageGlass) software since version 9.0.
+- This control has been used in [ImageGlass 9](https://github.com/d2phap/ImageGlass).
 
 ![Nuget](https://img.shields.io/nuget/dt/D2Phap.DXControl?color=%2300a8d6&logo=nuget)
 
@@ -19,7 +19,7 @@
 - Supports animation drawing with Direct2D.
 
 ## Requirements:
-- .NET 8.0, 9.0
+- .NET 10.0
 
 ## Installation
 Run the command
